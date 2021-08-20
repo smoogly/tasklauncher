@@ -10,6 +10,6 @@ import { annotate } from "./mapping/mappers/annotate";
 import { tag } from "./mapping/mappers/tag";
 
 export const exec = createExecutor(
-    <Input extends object>(task: Task<Input, Execution> & { taskName: string }) => pipe(task, provideCmdOptions, bufferBeforeStart, annotate, heartbeat, tag),
+    <Input extends Record<string, unknown>>(task: Task<Input, Execution> & { taskName: string }) => pipe(task, provideCmdOptions, bufferBeforeStart, annotate, heartbeat, tag),
     execution => terminateToStream(execution, process.stdout),
 );

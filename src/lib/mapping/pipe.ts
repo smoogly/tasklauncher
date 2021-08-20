@@ -12,6 +12,6 @@ export function pipe<A, B, C, D, E, F, G, H>(arg: A, f1: (arg: A) => B, f2: (arg
 export function pipe<A, B, C, D, E, F, G, H, I>(arg: A, f1: (arg: A) => B, f2: (arg: B) => C, f3: (arg: C) => D, f4: (arg: D) => E, f5: (arg: E) => F, f6: (arg: F) => G, f7: (arg: G) => H, f8: (arg: H) => I): I;
 export function pipe<A, B, C, D, E, F, G, H, I, J>(arg: A, f1: (arg: A) => B, f2: (arg: B) => C, f3: (arg: C) => D, f4: (arg: D) => E, f5: (arg: E) => F, f6: (arg: F) => G, f7: (arg: G) => H, f8: (arg: H) => I, f9: (arg: I) => J): J;
 export function pipe<A, B, C, D, E, F, G, H, I, J, K>(arg: A, f1: (arg: A) => B, f2: (arg: B) => C, f3: (arg: C) => D, f4: (arg: D) => E, f5: (arg: E) => F, f6: (arg: F) => G, f7: (arg: G) => H, f8: (arg: H) => I, f9: (arg: I) => J, f10: (arg: J) => K): K;
-export function pipe(arg: any, ...mappers: Fn[]): Fn {
+export function pipe(arg: any, ...mappers: Fn[]): Fn { // eslint-disable-line @typescript-eslint/no-explicit-any
     return mappers.reduce((acc, fn) => fn(acc), arg);
 }

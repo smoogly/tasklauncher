@@ -1,14 +1,14 @@
-import { Execution } from "../../execution";
-import { Input, Task } from "../../work_api";
+import { Input } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 import * as Observable from "zen-observable";
 import { noop } from "../../util/noop";
 import * as chalk from "chalk";
 import { delay } from "../../util/async";
 import { formatDuration } from "../../util/time";
+import { Executable } from "../../execution";
 
 export function setupAnnotator(spellDuration: (durationMs: number) => string) {
-    return function annotate<T extends Task<any, Execution> & { taskName: string }>(task: T) {
+    return function annotate<T extends Executable & { taskName: string }>(task: T) {
         function annotated(input: Input<T>) {
             const start = Date.now();
             const execution = task(input);

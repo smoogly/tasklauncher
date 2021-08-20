@@ -8,7 +8,7 @@ import { noop } from "../../util/noop";
 
 describe("Mappers / Annotate", () => {
     let task: TestTask;
-    let taskName: string = "name"
+    let taskName = "name"
 
     let durationStr: string;
     let formatDuration: SinonStub<[number], string>;

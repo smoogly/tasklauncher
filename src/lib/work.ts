@@ -28,8 +28,8 @@ const traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void)
 export function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<Fn> {
     const workTree: TaskTree<Fn> = exactlyOne(tasks)
         ? {
-            task: getRootTask(tasks[0] as any),
-            dependencies: getDependencies(tasks[0] as any),
+            task: getRootTask(tasks[0]),
+            dependencies: getDependencies(tasks[0]),
         }
         : {
             task: null,
@@ -62,5 +62,5 @@ export function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<
 }
 
 export function work<WorkItems extends Work<Fn>[]>(...workItems: WorkItems): TreeBuilder<WorkType<WorkItems[number]>> {
-    return _work(workItems, []) as any;
+    return _work(workItems, []) as TreeBuilder<WorkType<WorkItems[number]>>;
 }

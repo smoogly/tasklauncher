@@ -26,7 +26,8 @@ describe("Work utils", () => {
         });
 
         it("Should throw if given weird data", async () => {
-            expect(() => getRootTask(1 as any)).to.throw(/unexpected work type/i);
+            // @ts-expect-error, providing wrong value for tests
+            expect(() => getRootTask(1)).to.throw(/unexpected work type/i);
         });
     });
 
@@ -54,7 +55,8 @@ describe("Work utils", () => {
         });
 
         it("Should throw if given weird data", async () => {
-            expect(() => getDependencies(1 as any)).to.throw(/unexpected work type/i);
+            // @ts-expect-error, providing wrong value for tests
+            expect(() => getDependencies(1)).to.throw(/unexpected work type/i);
         });
     });
 });

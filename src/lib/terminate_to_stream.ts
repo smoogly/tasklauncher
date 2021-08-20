@@ -2,12 +2,12 @@ import { Execution } from "./execution";
 import { Writable } from "stream";
 
 export const terminateToStream = (execution: Execution, stream: Writable) => {
-    let lastErr: any = {};
-    const logError = (err: any) => {
+    let lastErr: unknown = {};
+    const logError = (err: unknown) => {
         if (err === lastErr) { return; }
 
         lastErr = err;
-        const msg = err instanceof Error ? `${ err.message }\n${ err.stack }` : new Error(err);
+        const msg = err instanceof Error ? `${ err.message }\n${ err.stack }` : err;
         stream.write("\n" + msg + "\n")
     };
 

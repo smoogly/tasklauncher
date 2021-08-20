@@ -7,7 +7,7 @@ type Subscription = ZenObservable.SubscriptionObserver<Buffer>;
 const accumulate = (stream: Readable) => {
     const subscribers: Subscription[] = [];
     const history: Buffer[] = [];
-    let error: any;
+    let error: unknown;
     let status: "running" | "closed" | "error" = "running";
 
     (async () => {
@@ -51,7 +51,7 @@ export function observableFromStream(stream: Readable) {
     return new Observable<Buffer>(observer => subscribe(observer));
 }
 
-export function observableStatus(observable: Observable<any>) {
+export function observableStatus(observable: Observable<unknown>) {
     let status: 'idle' | 'running' | 'rejected' | 'completed' = 'idle';
     const set = (s: typeof status) => () => { status = s; };
     observable.subscribe(

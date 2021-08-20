@@ -1,6 +1,8 @@
 import { Union } from "ts-toolbelt";
 
-export type Fn = (arg: any) => any;
+// Deliberate any, arguments are contravariant, need a wide type for general compatibility.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Fn = (arg: any) => unknown;
 export type Task<In, Out> = (input: In) => Out;
 
 export type TaskTree<T extends Fn> = {

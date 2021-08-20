@@ -1,12 +1,12 @@
-import { Input, Task } from "../../work_api";
-import { Execution } from "../../execution";
+import { Input } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 import { md5 } from "../../util/md5";
+import { Executable } from "../../execution";
 
 const NEWLINE_RE = /\n(?!$)/g;
 const ENDS_WITH_NEWLINE_RE = /\n$/;
 export function setupTagger(getTag: (taskName: string) => string) {
-    return function annotate<T extends Task<any, Execution> & { taskName: string }>(task: T) {
+    return function annotate<T extends Executable & { taskName: string }>(task: T) {
         const tagStr = getTag(task.taskName);
         function tagged(input: Input<T>) {
             const execution = task(input);

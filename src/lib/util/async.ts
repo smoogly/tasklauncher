@@ -8,7 +8,7 @@ export interface Deferred<T> {
     status: PromiseStatus;
 }
 
-export function promiseStatus(promise: Promise<any>) {
+export function promiseStatus(promise: Promise<unknown>) {
     let status: PromiseStatus = "running";
     promise.then(
         () => { status = "resolved"; },

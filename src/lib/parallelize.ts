@@ -26,7 +26,7 @@ function _parallelize<Input>(
             dependency.kill();
         };
 
-        const killOtherDependencies = (dependency: Execution) => (err: any) => {
+        const killOtherDependencies = (dependency: Execution) => (err: unknown) => {
             dependentExecutions
                 .filter(other => other !== dependency)
                 .forEach(killDependency);
@@ -60,7 +60,7 @@ function _parallelize<Input>(
         const started = Promise.race([targetStarted, dependenciesCompleted.then(() => infinitePromise)]).then(noop);
 
         const ownOutput = new Observable<Buffer>(s => {
-            const handleError = (err: any) => {
+            const handleError = (err: unknown) => {
                 if (s.closed) { return; }
                 s.error(err);
             };

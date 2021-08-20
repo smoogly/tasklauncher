@@ -1,12 +1,12 @@
-import { Input, Task } from "../../work_api";
+import { Input } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 import * as Observable from "zen-observable";
 import { merge } from "zen-observable/extras";
 import { noop } from "../../util/noop";
-import { Execution } from "../../execution";
+import { Executable } from "../../execution";
 
 const emptyBuffer = Buffer.from([]);
-export function bufferBeforeStart<T extends Task<any, Execution>>(task: T): T {
+export function bufferBeforeStart<T extends Executable>(task: T): T {
     function bufferedBeforeStart(input: Input<T>) {
         const execution = task(input);
 

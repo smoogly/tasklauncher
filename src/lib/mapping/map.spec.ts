@@ -36,7 +36,8 @@ describe("map", () => {
 
     it("Should not call the transformation with noop work", async () => {
         map(workTree, transform);
-        expect(transform.calledWith(null as any)).to.equal(false);
+        // @ts-expect-error, transform shouldn't be called with `null`, so typed accordingly.
+        expect(transform.calledWith(null)).to.equal(false);
     });
 
     it("Should pass a common dependency to transformation once", async () => {

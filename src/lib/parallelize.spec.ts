@@ -4,8 +4,10 @@ import { promiseStatus } from "./util/async";
 import { work } from "./work";
 import { createTestTask, TestTask } from "./util/create_test_task";
 import { observableStatus } from "./util/observable";
-import { SinonFakeTimers, useFakeTimers } from "sinon";
+import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";
+import { Task, Work } from "./work_api";
+import { Execution } from "./execution";
 
 
 describe("parallelize", () => {
@@ -42,7 +44,8 @@ describe("parallelize", () => {
 
     it("Should provide the input to each task", async () => {
         const input = { input: "input" };
-        const execution = parallelize(work(target.task).after(dep1.task).after(dep2.task))(input as any);
+        const typedWork = work(target.task).after(dep1.task).after(dep2.task) as unknown as Work<Task<typeof input, Execution>>;
+        const execution = parallelize(typedWork)(input);
 
         dep1.start.resolve(); dep1.completion.resolve();
         dep2.start.resolve(); dep2.completion.resolve();
@@ -50,7 +53,8 @@ describe("parallelize", () => {
         await execution.completed;
 
         [dep1.task, dep2.task, target.task].forEach(t => {
-            expect(t.calledWithExactly(input as any)).to.equal(true);
+            const mock = t as unknown as SinonStub<[typeof input], Execution>;
+            expect(mock.calledWithExactly(input)).to.equal(true);
         });
     });
 
@@ -452,7 +456,7 @@ describe("parallelize", () => {
         const branch2 = work(dep2.task).after(common.task);
         const execution = parallelize(work(target.task).after(branch1, branch2))();
 
-        let output: string = "";
+        let output = "";
         execution.output.subscribe(
             next => output += next.toString("utf8"),
             noop, // Ignore errors

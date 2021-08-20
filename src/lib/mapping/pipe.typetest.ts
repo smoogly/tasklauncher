@@ -10,6 +10,8 @@ import { pipe } from "./pipe";
 import { Any, Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 
+// `keyof any` is a correct usage to get a value of a generic key
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UnionOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never;
 
 declare function identity<T extends Fn>(task: T): T;

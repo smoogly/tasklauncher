@@ -63,7 +63,7 @@ describe("Util / observable", () => {
             await resolve("c");
             await resolve(null);
 
-            let localOutput: string = "";
+            let localOutput = "";
             observable.map(x => x.toString("utf8"))
                 .reduce((a, b) => a + b)
                 .subscribe(x => { localOutput = x });
@@ -78,7 +78,7 @@ describe("Util / observable", () => {
             await resolve("c");
             await reject(new Error("err"));
 
-            let localOutput: string = "";
+            let localOutput = "";
             observable.map(x => x.toString("utf8"))
                 .subscribe(x => { localOutput += x }, noop);
 

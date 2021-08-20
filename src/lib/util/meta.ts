@@ -7,12 +7,12 @@ type Reduce<Sources extends Fn[], Result> = {
     "proceed": Reduce<List.Tail<Sources>, Omit<Result, keyof List.Head<Sources>> & Meta<List.Head<Sources>>>;
     "stop": Result;
 }[List.Length<Sources> extends 0 ? "stop" : "proceed"];
-export function copyMeta<Target extends Fn, Sources extends Fn[]>(target: Target, ...sources: Sources): Target & Reduce<Sources, {}> {
+export function copyMeta<Target extends Fn, Sources extends Fn[]>(target: Target, ...sources: Sources) {
     sources.forEach(source => {
         objectKeys(source).forEach(key => {
             target[key] = source[key];
         });
     });
 
-    return target as any;
+    return target as Target & Reduce<Sources, {}>;
 }

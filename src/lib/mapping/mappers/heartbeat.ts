@@ -1,16 +1,16 @@
-import { Input, Task } from "../../work_api";
-import { Execution } from "../../execution";
+import { Input } from "../../work_api";
 import * as Observable from "zen-observable";
 import { noop } from "../../util/noop";
 import { copyMeta } from "../../util/meta";
 import { formatDuration } from "../../util/time";
 import { once } from "../../util/once";
+import { Executable } from "../../execution";
 
 export function setupHeartbeat(
     scheduleHeartbeat: (cb: () => void) => () => void,
     spellDuration: (durationMs: number) => string,
 ) {
-    return function heartbeat<T extends Task<any, Execution> & { taskName: string }>(task: T) {
+    return function heartbeat<T extends Executable & { taskName: string }>(task: T) {
         function withHeartbeat(input: Input<T>) {
             const start = Date.now();
             const execution = task(input);
