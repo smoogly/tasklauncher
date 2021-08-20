@@ -18,7 +18,7 @@ export function setupCmdOptionsProvider(getOptions: () => CmdOptions) {
         // Types are hard, I'm not sure why is this type not assignable on it's own.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return copyMeta(cmdOptionsProvider, task) as any;
-    }
+    };
 }
 
 const cmdOptions: CmdOptions = {

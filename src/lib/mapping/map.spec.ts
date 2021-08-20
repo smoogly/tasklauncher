@@ -20,7 +20,7 @@ describe("map", () => {
         common = createTestTask();
 
         const branch1 = work().after(dep1.task).after(common.task);
-        const branch2 = work(dep2.task).after(common.task)
+        const branch2 = work(dep2.task).after(common.task);
         workTree = work(target.task).after(branch1, branch2);
 
         transform = stub<[Fn], Fn>().returnsArg(0);

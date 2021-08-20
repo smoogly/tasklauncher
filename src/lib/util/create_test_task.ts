@@ -10,14 +10,14 @@ export interface TestTask<T = void> {
     kill: SinonStub<[], void>,
     start: Deferred<void>,
     completion: Deferred<void>,
-    writeOutput: (output: string) => void;
+    writeOutput: (output: string) => void,
 }
 export const createTestTask = <T = void>(): TestTask<T> => {
     const start = deferred<void>();
     const completion = deferred<void>();
 
     const kill = stub<[], void>();
-    let writeOutput: (output: string) => void = () => { throw new Error("Writer not initiated yet") };
+    let writeOutput: (output: string) => void = () => { throw new Error("Writer not initiated yet"); };
 
     const task = stub<[T], Execution>().returns({
         kill,
@@ -37,4 +37,4 @@ export const createTestTask = <T = void>(): TestTask<T> => {
         completion,
         get writeOutput() { return writeOutput; },
     };
-}
+};

@@ -8,7 +8,7 @@ export const terminateToStream = (execution: Execution, stream: Writable) => {
 
         lastErr = err;
         const msg = err instanceof Error ? `${ err.message }\n${ err.stack }` : err;
-        stream.write("\n" + msg + "\n")
+        stream.write("\n" + msg + "\n");
     };
 
     execution.output.subscribe(
@@ -18,4 +18,4 @@ export const terminateToStream = (execution: Execution, stream: Writable) => {
     );
 
     Promise.all([execution.started, execution.completed]).catch(logError);
-}
+};

@@ -64,7 +64,7 @@ describe("parallelize", () => {
 
         expect(dep1.task.calledOnce).to.equal(true);
         expect(dep2.task.calledOnce).to.equal(true);
-        expect(target.task.called).to.equal(false)
+        expect(target.task.called).to.equal(false);
     });
 
     it("Should execute the target task after the dependencies have started", async () => {
@@ -84,7 +84,7 @@ describe("parallelize", () => {
 
         expect(dep2.task.calledOnce).to.equal(true);
         expect(dep1.task.called).to.equal(false);
-        expect(target.task.called).to.equal(false)
+        expect(target.task.called).to.equal(false);
     });
 
     it("Should execute the first-level dependencies after the nested dependencies have started", async () => {

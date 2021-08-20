@@ -37,4 +37,4 @@ const scheduleHeartbeat = (cb: () => void) => {
     return () => clearInterval(heartbeatTimer);
 };
 
-export const heartbeat = setupHeartbeat(scheduleHeartbeat, formatDuration)
+export const heartbeat = setupHeartbeat(scheduleHeartbeat, formatDuration);

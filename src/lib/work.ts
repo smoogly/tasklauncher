@@ -22,7 +22,7 @@ const _traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void
     if (tree.task && visited.includes(tree.task)) { throw new Error("Circular dependency"); }
     tree.dependencies.forEach(node => _traversePostVisit(node, cb, tree.task ? [...visited, tree.task] : visited));
     cb(tree);
-}
+};
 const traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void) => _traversePostVisit(tree, cb, []);
 
 export function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<Fn> {

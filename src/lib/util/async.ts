@@ -2,10 +2,10 @@ import { noop } from "./noop";
 
 type PromiseStatus = "running" | "resolved" | "rejected";
 export interface Deferred<T> {
-    resolve(val: T): void;
-    reject(val?: Error): void;
-    promise: Promise<T>;
-    status: PromiseStatus;
+    resolve(val: T): void,
+    reject(val?: Error): void,
+    promise: Promise<T>,
+    status: PromiseStatus,
 }
 
 export function promiseStatus(promise: Promise<unknown>) {

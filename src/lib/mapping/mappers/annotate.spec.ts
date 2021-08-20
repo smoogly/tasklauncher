@@ -8,12 +8,12 @@ import { noop } from "../../util/noop";
 
 describe("Mappers / Annotate", () => {
     let task: TestTask;
-    let taskName = "name"
+    let taskName = "name";
 
     let durationStr: string;
     let formatDuration: SinonStub<[number], string>;
 
-    let annotate: ReturnType<typeof setupAnnotator>
+    let annotate: ReturnType<typeof setupAnnotator>;
     let annotated: TestTask["task"];
     let annotatedExecution: Execution;
     let capturedOutput: string;

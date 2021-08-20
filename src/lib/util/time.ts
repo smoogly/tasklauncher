@@ -10,12 +10,12 @@ export function formatDuration(n: number): string {
 
     let unit = "ms";
     for (const [magnitude, possibleMarker] of durationUnits) {
-        if (n < magnitude) { continue }
+        if (n < magnitude) { continue; }
         n = n / magnitude;
         unit = possibleMarker;
         break;
     }
 
-    const floored = Math.floor(n * 10) / 10
+    const floored = Math.floor(n * 10) / 10;
     return `${ floored }${ unit }`;
 }

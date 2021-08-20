@@ -11,8 +11,8 @@ export type TaskTree<T extends Fn> = {
 };
 
 export type TreeBuilder<T extends Fn> = {
-    getWorkTree(): TaskTree<T>;
-    after<WorkItems extends Work<Fn>[]>(...work: WorkItems): TreeBuilder<T | WorkType<WorkItems[number]>>;
+    getWorkTree(): TaskTree<T>,
+    after<WorkItems extends Work<Fn>[]>(...work: WorkItems): TreeBuilder<T | WorkType<WorkItems[number]>>,
 };
 
 export type Work<T extends Fn> = T | TaskTree<T> | TreeBuilder<T>;
@@ -21,7 +21,7 @@ export type WorkType<T extends Work<Fn>> = T extends Fn ? T : T extends Work<inf
 // Input, Output and Meta first work with T as an Fn to avoid inferring types when task is given explicitly
 type ResolveInput<T extends Work<Fn>> = T extends Task<infer I, infer _O> ? I
     : WorkType<T> extends Task<infer WI, infer _WO> ? WI
-    : never
+    : never;
 export type Input<T extends Work<Fn>> = Union.IntersectOf<ResolveInput<T>>;
 
 export type Output<T extends Work<Fn>> = T extends Task<infer _I, infer O> ? O

@@ -44,8 +44,8 @@ const accumulate = (stream: Readable) => {
             default:
                 return unreachable(status);
         }
-    }
-}
+    };
+};
 export function observableFromStream(stream: Readable) {
     const subscribe = accumulate(stream);
     return new Observable<Buffer>(observer => subscribe(observer));

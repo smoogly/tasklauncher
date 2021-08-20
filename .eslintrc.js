@@ -26,5 +26,25 @@ module.exports = {
 
     // I don't like it
     "@typescript-eslint/explicit-module-boundary-types": "off",
+
+    // Interface/type delimiter styles, prefer comma
+    "@typescript-eslint/member-delimiter-style": [
+      "warn",
+      {
+        "multiline": {
+          "delimiter": "comma",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "comma",
+          "requireLast": false
+        },
+        "multilineDetection": "brackets"
+      }
+    ],
+
+    // Semicolon
+    "semi": "off",
+    "@typescript-eslint/semi": ["error"],
   },
 };

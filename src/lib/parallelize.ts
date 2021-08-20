@@ -54,7 +54,7 @@ function _parallelize<Input>(
 
         Promise.all([targetStarted, targetCompleted]).catch(noop).then(() => {
             if (!isRoot) { return; }
-            dependentExecutions.forEach(killDependency)
+            dependentExecutions.forEach(killDependency);
         }).catch(noop);
         const completed = Promise.all([targetCompleted, ...dependentExecutions.map(dep => dep.completed)]).then(noop);
         const started = Promise.race([targetStarted, dependenciesCompleted.then(() => infinitePromise)]).then(noop);

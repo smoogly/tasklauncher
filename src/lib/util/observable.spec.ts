@@ -66,7 +66,7 @@ describe("Util / observable", () => {
             let localOutput = "";
             observable.map(x => x.toString("utf8"))
                 .reduce((a, b) => a + b)
-                .subscribe(x => { localOutput = x });
+                .subscribe(x => { localOutput = x; });
 
             await timers.runAllAsync();
             expect(localOutput).to.equal("abc");
@@ -80,7 +80,7 @@ describe("Util / observable", () => {
 
             let localOutput = "";
             observable.map(x => x.toString("utf8"))
-                .subscribe(x => { localOutput += x }, noop);
+                .subscribe(x => { localOutput += x; }, noop);
 
             await timers.runAllAsync();
             expect(localOutput).to.equal("abc");
@@ -95,9 +95,9 @@ describe("Util / observable", () => {
 
         it("Should pass stream values to new subscriptions", async () => {
             let localOutput = "";
-            observable.map(x => x.toString("utf8")).subscribe(x => { localOutput += x });
+            observable.map(x => x.toString("utf8")).subscribe(x => { localOutput += x; });
 
-            await resolve("val")
+            await resolve("val");
             await timers.runAllAsync();
             expect(localOutput).to.equal("val");
         });
