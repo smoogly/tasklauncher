@@ -1,0 +1,19 @@
+# dependencies
+/node_modules
+
+# Build
+/build
+
+# Misc
+npm-debug.log*
+/dump
+
+# Webstorm config
+/.idea
+
+# Coverage
+/.nyc_output
+/coverage
+
+# TS incremental build data
+.tsbuildinfo
