@@ -45,7 +45,10 @@ function _parallelize<Input>(
             if (cachedExecution) { return cachedExecution; }
 
             const execution = task(input);
-            executions.set(task, execution);
+            executions.set(task, {
+                ...execution,
+                output: Observable.of<Buffer>()
+            });
             return execution;
         });
 

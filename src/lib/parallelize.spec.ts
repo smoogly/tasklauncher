@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import * as Observable from "zen-observable";
 import { parallelize } from "./parallelize";
 import { promiseStatus } from "./util/async";
 import { work } from "./work";
@@ -12,9 +13,9 @@ import { Execution } from "./execution";
 
 describe("parallelize", () => {
     let target: TestTask;
-    let dep1: TestTask = createTestTask();
-    let dep2: TestTask = createTestTask();
-    let common: TestTask = createTestTask();
+    let dep1: TestTask;
+    let dep2: TestTask;
+    let common: TestTask;
 
     let timers: SinonFakeTimers;
     beforeEach(() => {
@@ -471,5 +472,28 @@ describe("parallelize", () => {
 
         tasks.forEach(t => t.writeOutput("output"));
         expect(output).to.equal(""); // Each task had output, but it's not propagate
+    });
+
+    it("Should only pipe common task output once", async () => {
+        const commonTaskOutput = "output";
+        const commonTask = (): Execution => ({
+            kill: noop,
+            started: Promise.resolve(),
+            completed: Promise.resolve(),
+            output: new Observable<Buffer>(s => {
+                s.next(Buffer.from(commonTaskOutput));
+                s.complete();
+            }),
+        });
+
+        const branch1 = work(dep1.task).after(commonTask);
+        const branch2 = work(dep2.task).after(commonTask);
+        const execution = parallelize(work(target.task).after(branch1, branch2))();
+
+        let output = "";
+        execution.output.subscribe(next => output += next.toString("utf8"));
+        await timers.runAllAsync();
+
+        expect(output).to.equal(commonTaskOutput);
     });
 });
