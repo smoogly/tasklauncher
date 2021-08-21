@@ -37,7 +37,7 @@ describe("Mappers / Heartbeat", () => {
         capturedOutput = "";
         executionWithHeartbeat.output.subscribe(
             x => capturedOutput = capturedOutput + x.toString("utf8"),
-            noop
+            noop,
         );
         await timers.runAllAsync();
     });

@@ -22,7 +22,7 @@ describe("Mappers / Buffer before start", () => {
         capturedOutput = "";
         bufferedExecution.output.subscribe(
             x => capturedOutput = capturedOutput + x.toString("utf8"),
-            noop
+            noop,
         );
 
         await timers.runAllAsync();

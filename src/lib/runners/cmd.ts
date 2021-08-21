@@ -12,7 +12,7 @@ export type CmdOptions = { supportsColor?: boolean };
 
 export function cmd(
     command: string,
-    detectStart?: StartDetector
+    detectStart?: StartDetector,
 ): Task<CmdOptions, Execution> & { taskName: string } {
     const cmd = command.replace(/\s+/g, " ").trim();
     const [executable, ...args] = cmd.split(" ");

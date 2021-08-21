@@ -57,7 +57,7 @@ export function observableStatus(observable: Observable<unknown>) {
     observable.subscribe(
         set('running'),
         set('rejected'),
-        set('completed')
+        set('completed'),
     );
 
     return () => status;

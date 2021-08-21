@@ -17,7 +17,7 @@ describe("Work utils", () => {
         it("Should return a root task from the task tree", async () => {
             expect(getRootTask({
                 task: task.task,
-                dependencies: []
+                dependencies: [],
             })).to.equal(task.task);
         });
 

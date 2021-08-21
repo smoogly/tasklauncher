@@ -17,7 +17,7 @@ describe("work tree builder", () => {
     });
 
     it("Should specify the target task in the root of the work tree", async () => {
-        expect(work(target.task).getWorkTree()).to.deep.equal({ task: target.task, dependencies: [], });
+        expect(work(target.task).getWorkTree()).to.deep.equal({ task: target.task, dependencies: [] });
     });
 
     it("Should specify tasks as dependencies of noop work if multiple target tasks are given", async () => {
@@ -36,7 +36,7 @@ describe("work tree builder", () => {
             dependencies: [
                 { task: dep1.task, dependencies: [] },
                 { task: dep2.task, dependencies: [] },
-            ]
+            ],
         });
     });
 
@@ -46,7 +46,7 @@ describe("work tree builder", () => {
             dependencies: [
                 { task: dep1.task, dependencies: [] },
                 { task: dep2.task, dependencies: [] },
-            ]
+            ],
         });
     });
 
@@ -56,10 +56,10 @@ describe("work tree builder", () => {
             dependencies: [
                 {
                     task: dep1.task, dependencies: [
-                        { task: dep2.task, dependencies: [] }
-                    ]
+                        { task: dep2.task, dependencies: [] },
+                    ],
                 },
-            ]
+            ],
         });
     });
 
@@ -72,13 +72,13 @@ describe("work tree builder", () => {
             dependencies: [
                 {
                     task: dep1.task,
-                    dependencies: [nestedWork.getWorkTree()]
+                    dependencies: [nestedWork.getWorkTree()],
                 },
                 {
                     task: dep2.task,
-                    dependencies: [nestedWork.getWorkTree()]
-                }
-            ]
+                    dependencies: [nestedWork.getWorkTree()],
+                },
+            ],
         });
     });
 

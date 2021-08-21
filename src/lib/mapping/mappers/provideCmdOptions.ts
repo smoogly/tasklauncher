@@ -9,7 +9,7 @@ import { Any, Object } from "ts-toolbelt";
 type UnionOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never;
 export function setupCmdOptionsProvider(getOptions: () => CmdOptions) {
     return function provideCmdOptions<I extends Object.Optional<CmdOptions>, T extends Task<I, unknown>>(
-        task: Any.Cast<T, Task<I, unknown>>
+        task: Any.Cast<T, Task<I, unknown>>,
     ): Task<UnionOmit<I, keyof CmdOptions>, Output<T>> & Meta<T> {
         const cmdOptionsProvider = (input: UnionOmit<I, keyof CmdOptions>) => {
             return task({ ...input, ...getOptions() } as unknown as I) as Output<T>;

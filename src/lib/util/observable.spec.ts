@@ -46,7 +46,7 @@ describe("Util / observable", () => {
             capturedOutput = "";
             observable.subscribe(
                 next => capturedOutput += next.toString("utf8"),
-                noop
+                noop,
             );
         });
 

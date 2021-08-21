@@ -36,7 +36,7 @@ describe("Mappers / Annotate", () => {
         capturedOutput = "";
         annotatedExecution.output.subscribe(
             x => capturedOutput = capturedOutput + x.toString("utf8"),
-            noop
+            noop,
         );
         await timers.runAllAsync();
     });

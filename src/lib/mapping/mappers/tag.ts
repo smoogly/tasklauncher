@@ -20,7 +20,7 @@ export function setupTagger(getTag: (taskName: string) => string) {
 
                     const res = Buffer.from(
                         (shouldPrependTag ? tagStr : "") +
-                        chunkStr.replace(NEWLINE_RE, "\n" + tagStr)
+                        chunkStr.replace(NEWLINE_RE, "\n" + tagStr),
                     );
 
                     // Prepend tag next time if this chunk ends with newline

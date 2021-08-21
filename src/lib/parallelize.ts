@@ -47,7 +47,7 @@ function _parallelize<Input>(
             const execution = task(input);
             executions.set(task, {
                 ...execution,
-                output: Observable.of<Buffer>()
+                output: Observable.of<Buffer>(),
             });
             return execution;
         });

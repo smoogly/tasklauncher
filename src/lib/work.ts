@@ -36,7 +36,7 @@ export function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<
             dependencies: tasks.map(item => ({
                 task: getRootTask(item),
                 dependencies: getDependencies(item),
-            }))
+            })),
         };
 
     if (dependencies.length > 0) {

@@ -14,7 +14,7 @@ export const terminateToStream = (execution: Execution, stream: Writable) => {
     execution.output.subscribe(
         chunk => stream.write(chunk),
         logError,
-        () => stream.write("\n")
+        () => stream.write("\n"),
     );
 
     Promise.all([execution.started, execution.completed]).catch(logError);

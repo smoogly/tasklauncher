@@ -5,7 +5,7 @@ import { Executable, Execution } from "./execution";
 
 export function createExecutor<
     In extends Fn,
-    Out extends Executable
+    Out extends Executable,
 >(
     mapper: (task: In) => Out,
     terminate: (result: Execution) => void,

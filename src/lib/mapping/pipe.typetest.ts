@@ -4,7 +4,7 @@ import {
     TargetInput, TargetOutput,
     testWork,
     TestWorkInput, TestWorkMeta,
-    TestWorkOutput
+    TestWorkOutput,
 } from "../tree_builder.typetest";
 import { pipe } from "./pipe";
 import { Any, Test } from "ts-toolbelt";
