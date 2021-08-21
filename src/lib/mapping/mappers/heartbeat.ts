@@ -16,7 +16,7 @@ export function setupHeartbeat(
             const execution = task(input);
 
             const output = new Observable<Buffer>(s => {
-                const stop = once(scheduleHeartbeat(() => s.next(Buffer.from(`Still running ${ task.taskName } for ${ spellDuration(Date.now() - start) }`))));
+                const stop = once(scheduleHeartbeat(() => s.next(Buffer.from(`Still running ${ task.taskName } for ${ spellDuration(Date.now() - start) }\n`))));
                 execution.output.subscribe(s);
                 Promise.race([execution.started, execution.completed]).then(stop, stop).catch(noop);
             });
