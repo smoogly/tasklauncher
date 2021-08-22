@@ -2,8 +2,6 @@ import { objectKeys } from "../../lib/util/typeguards";
 import { cmd, CmdOptions } from "../../lib/runners/cmd";
 import { Execution } from "../../lib/execution";
 
-export const checkOnly = cmd("./src/tasks/definitions/util/check-only.sh");
-
 export const defaultTestSpec = "'src/**/*.spec.ts'";
 type UnitTestsParams = {
     coverage: boolean,
