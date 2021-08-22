@@ -1,12 +1,13 @@
 module.exports = {
   root: true,
-  parser: '@typescript-eslint/parser',
+  env: { node: true },
+  parser: "@typescript-eslint/parser",
   plugins: [
-    '@typescript-eslint',
+    "@typescript-eslint",
   ],
   extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
   ],
   "rules": {
     // Usages of `{}` and `object` look fine in this repo
@@ -15,7 +16,7 @@ module.exports = {
       "types": {
         "{}": false,
         "object": false,
-      }
+      },
     }],
 
     // Already handled by typescript
@@ -28,13 +29,13 @@ module.exports = {
     "@typescript-eslint/member-delimiter-style": ["warn", {
       "multiline": {
         "delimiter": "comma",
-        "requireLast": true
+        "requireLast": true,
       },
       "singleline": {
         "delimiter": "comma",
-        "requireLast": false
+        "requireLast": false,
       },
-      "multilineDetection": "brackets"
+      "multilineDetection": "brackets",
     }],
 
     // Semicolon
@@ -51,7 +52,22 @@ module.exports = {
       "functions": "always-multiline",
       "enums": "always-multiline",
       "generics": "always-multiline",
-      "tuples": "always-multiline"
+      "tuples": "always-multiline",
     }],
+
+    // Quotes
+    "quotes": "off",
+    "@typescript-eslint/quotes": ["error"],
+
+    // Spacing around type annotations
+    "@typescript-eslint/type-annotation-spacing": ["error"],
+
+    // Curly spacing
+    "object-curly-spacing": "off",
+    "@typescript-eslint/object-curly-spacing": ["error", "always"],
+
+    // Shadowing requires paying close attention during debug
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
   },
 };

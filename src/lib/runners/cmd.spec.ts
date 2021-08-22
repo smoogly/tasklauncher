@@ -75,7 +75,7 @@ describe("Runners / cmd", () => {
     });
 
     it("Should forward stdout and stderr", async () => {
-        let captured = '';
+        let captured = "";
         task(cmdOptions).output.subscribe(s => captured += s.toString("utf8"), noop);
 
         await stdout.write(Buffer.from("out"));

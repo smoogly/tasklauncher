@@ -15,14 +15,14 @@ import { noop } from "../util/noop";
 export type StartDetector = (output: Observable<Buffer>, started: () => void) => void;
 export type CmdOptions = { supportsColor?: boolean };
 
-export type CMDSpawnType = (command: string, args: ReadonlyArray<string>, options: SpawnOptionsWithoutStdio) => Pick<ChildProcessWithoutNullStreams, 'stdout' | 'stderr' | 'on' | 'kill'>;
+export type CMDSpawnType = (command: string, args: ReadonlyArray<string>, options: SpawnOptionsWithoutStdio) => Pick<ChildProcessWithoutNullStreams, "stdout" | "stderr" | "on" | "kill">;
 export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Record<string, string | undefined>) {
     return function cmd(
         command: string,
         detectStart?: StartDetector,
     ): Task<CmdOptions, Execution> & { taskName: string } {
-        const cmd = command.replace(/\s+/g, " ").trim();
-        const [executable, ...args] = cmd.split(" ");
+        const trimmedCommand = command.replace(/\s+/g, " ").trim();
+        const [executable, ...args] = trimmedCommand.split(" ");
         if (!executable) { throw new Error("No executable given"); }
 
         return Object.assign((input: CmdOptions): Execution => {
@@ -34,7 +34,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
                 child.on("exit", (code, signal) => {
                     if (code === 0) { return res(); }
                     const reason = code !== null ? `non-zero code '${ code }'` : `signal '${ signal }'`;
-                    rej(new Error(`Terminated with ${ reason }: ${ cmd }`));
+                    rej(new Error(`Terminated with ${ reason }: ${ trimmedCommand }`));
                 });
             });
 
@@ -53,7 +53,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
                 completed: Promise.all([started, completed]).then(noop),
                 kill: () => child.kill(),
             };
-        }, { taskName: cmd });
+        }, { taskName: trimmedCommand });
     };
 }
 

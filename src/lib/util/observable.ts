@@ -52,12 +52,12 @@ export function observableFromStream(stream: Readable) {
 }
 
 export function observableStatus(observable: Observable<unknown>) {
-    let status: 'idle' | 'running' | 'rejected' | 'completed' = 'idle';
+    let status: "idle" | "running" | "rejected" | "completed" = "idle";
     const set = (s: typeof status) => () => { status = s; };
     observable.subscribe(
-        set('running'),
-        set('rejected'),
-        set('completed'),
+        set("running"),
+        set("rejected"),
+        set("completed"),
     );
 
     return () => status;

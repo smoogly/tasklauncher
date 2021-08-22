@@ -1,20 +1,20 @@
 import { Fn, TaskTree, TreeBuilder, Work, WorkType } from "./work_api";
 import { noop } from "./util/noop";
 
-export const isTreeBuilder = <T extends Fn>(work: Work<T>): work is TreeBuilder<T> => Boolean(work) && typeof work === "object" && "getWorkTree" in work;
-export const isTaskTree = <T extends Fn>(work: Work<T>): work is TaskTree<T> => Boolean(work) && typeof work === "object" && "task" in work;
+export const isTreeBuilder = <T extends Fn>(wrk: Work<T>): wrk is TreeBuilder<T> => Boolean(wrk) && typeof wrk === "object" && "getWorkTree" in wrk;
+export const isTaskTree = <T extends Fn>(wrk: Work<T>): wrk is TaskTree<T> => Boolean(wrk) && typeof wrk === "object" && "task" in wrk;
 
-export function getRootTask<T extends Fn>(work: Work<T>): T | null {
-    if (isTreeBuilder(work)) { return getRootTask(work.getWorkTree()); }
-    if (isTaskTree(work)) { return work.task; }
-    if (typeof work === "function") { return work; }
-    throw new Error(`Unexpected work type: ${ work }`);
+export function getRootTask<T extends Fn>(wrk: Work<T>): T | null {
+    if (isTreeBuilder(wrk)) { return getRootTask(wrk.getWorkTree()); }
+    if (isTaskTree(wrk)) { return wrk.task; }
+    if (typeof wrk === "function") { return wrk; }
+    throw new Error(`Unexpected work type: ${ wrk }`);
 }
-export function getDependencies<T extends Fn>(work: Work<T>): TaskTree<T>[] {
-    if (isTreeBuilder(work)) { return work.getWorkTree().dependencies; }
-    if (isTaskTree(work)) { return work.dependencies; }
-    if (typeof work === "function") { return []; }
-    throw new Error(`Unexpected work type: ${ work }`);
+export function getDependencies<T extends Fn>(wrk: Work<T>): TaskTree<T>[] {
+    if (isTreeBuilder(wrk)) { return wrk.getWorkTree().dependencies; }
+    if (isTaskTree(wrk)) { return wrk.dependencies; }
+    if (typeof wrk === "function") { return []; }
+    throw new Error(`Unexpected work type: ${ wrk }`);
 }
 
 const hasProp = <K extends PropertyKey>(val: object, prop: K): val is Record<K, unknown> => prop in val;

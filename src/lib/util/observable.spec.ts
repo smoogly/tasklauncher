@@ -64,7 +64,7 @@ describe("Util / observable", () => {
 
         it("Should mark new subscriptions rejected when stream has errored", async () => {
             await stream.raise(new Error("err"));
-            const status = observableStatus(observable.map(x => x.toString("utf8")));
+            status = observableStatus(observable.map(x => x.toString("utf8")));
             await timers.runAllAsync();
             expect(status()).to.equal("rejected");
         });

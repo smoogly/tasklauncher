@@ -103,7 +103,7 @@ describe("work tree builder", () => {
     });
 
     it("Should display 'unknown' for circular dependency description if nothing else is available", async () => {
-        const task = Object.assign(() => void 0, { toString: () => '' });
+        const task = Object.assign(() => void 0, { toString: () => "" });
         expect(() => work(task).after(task)).to.throw(/unknown/);
     });
 

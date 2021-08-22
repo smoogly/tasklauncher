@@ -54,7 +54,7 @@ describe("Mappers / Heartbeat", () => {
 
     it("Should display the heartbeat", async () => {
         scheduleHeartbeat.firstCall.args[0]();
-        expect(capturedOutput.toLowerCase()).to.contain('still running');
+        expect(capturedOutput.toLowerCase()).to.contain("still running");
         expect(capturedOutput).to.contain(taskName);
     });
 

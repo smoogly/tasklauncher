@@ -15,5 +15,5 @@ mapped2({});
 
 const cmdOptionsKey: keyof CmdOptions = "supportsColor";
 // @ts-expect-error — incompatible type of CmdOptions prop
-provideCmdOptions(1 as unknown as Task<{[cmdOptionsKey]: 1}, 1>);
+provideCmdOptions(1 as unknown as Task<{ [cmdOptionsKey]: 1 }, 1>);
 

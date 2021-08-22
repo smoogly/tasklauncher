@@ -106,7 +106,7 @@ describe("Mappers / Annotate", () => {
         task.completion.resolve();
         await timers.runAllAsync();
 
-        expect(capturedOutput).to.not.contain(`Started`);
+        expect(capturedOutput).to.not.contain("Started");
     });
 
     it("Should emit that the task has failed before start", async () => {

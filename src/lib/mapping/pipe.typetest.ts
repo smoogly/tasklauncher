@@ -14,7 +14,7 @@ type UnionOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : neve
 
 declare function identity<T extends Fn>(task: T): T;
 declare function extra<T extends Fn>(task: T): Task<Input<T> & { extraInput: string }, Output<T> & { extraOutput: string }> & Meta<T> & { extraMeta: string };
-declare function omit<T extends Fn>(task: T): Task<UnionOmit<Input<T>, 'dep1Input'>, UnionOmit<Output<T>, 'dep1Output'>> & UnionOmit<Meta<T>, 'dep1Meta'>;
+declare function omit<T extends Fn>(task: T): Task<UnionOmit<Input<T>, "dep1Input">, UnionOmit<Output<T>, "dep1Output">> & UnionOmit<Meta<T>, "dep1Meta">;
 declare function restricted<T extends Task<TestWorkInput, TestWorkOutput> & TestWorkMeta>(task: T): Task<Input<T>, Output<T>> & Meta<T>;
 
 declare const task: WorkType<typeof testWork>;
