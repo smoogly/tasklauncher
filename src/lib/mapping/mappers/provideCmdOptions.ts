@@ -4,9 +4,7 @@ import { Meta, Output, Task } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 import { Any, Object } from "ts-toolbelt";
 
-// `keyof any` is a correct usage to get a value of a generic key
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UnionOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never;
+type UnionOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 export function setupCmdOptionsProvider(getOptions: () => CmdOptions) {
     return function provideCmdOptions<I extends Object.Optional<CmdOptions>, T extends Task<I, unknown>>(
         task: Any.Cast<T, Task<I, unknown>>,
