@@ -14,6 +14,7 @@ type UnitTestsParams = {
 export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions): Execution => {
     const nycExcludes = [
         "**/*.spec.ts",
+        "src/tasks/**",
     ];
 
     const coverageLimits = {
@@ -26,7 +27,7 @@ export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions): Exe
         ? `--check-coverage ${ objectKeys(coverageLimits).map(t => `--${ t }=${ coverageLimits[t] }`).join(" ") }`
         : ""; // Ignore limits when spec is specified
 
-    const nyc = `nyc -r=text -r=html -e .ts ${ limitsParams } --include 'src/**' ${ nycExcludes.map(excl => `--exclude '${ excl }'`).join(" ") }`;
+    const nyc = `nyc -r=text -r=html ${ limitsParams } --include 'src/**' -e .ts --all ${ nycExcludes.map(excl => `--exclude '${ excl }'`).join(" ") }`;
 
     const mochaIncludes = [
         "ts-node/register/transpile-only",

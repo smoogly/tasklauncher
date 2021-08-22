@@ -1,49 +1,65 @@
-import { spawn } from "child_process";
+import {
+    spawn,
+    ChildProcessWithoutNullStreams,
+    SpawnOptionsWithoutStdio,
+} from "child_process";
 import * as Observable from "zen-observable";
 
 import { Task } from "../work_api";
 import { observableFromStream } from "../util/observable";
 import { Execution } from "../execution";
 import { merge } from "zen-observable/extras";
+import { noop } from "../util/noop";
 
 
 export type StartDetector = (output: Observable<Buffer>, started: () => void) => void;
 export type CmdOptions = { supportsColor?: boolean };
 
-export function cmd(
-    command: string,
-    detectStart?: StartDetector,
-): Task<CmdOptions, Execution> & { taskName: string } {
-    const cmd = command.replace(/\s+/g, " ").trim();
-    const [executable, ...args] = cmd.split(" ");
-    if (!executable) { throw new Error("No executable given"); }
+export type CMDSpawnType = (command: string, args: ReadonlyArray<string>, options: SpawnOptionsWithoutStdio) => Pick<ChildProcessWithoutNullStreams, 'stdout' | 'stderr' | 'on' | 'kill'>;
+export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Record<string, string | undefined>) {
+    return function cmd(
+        command: string,
+        detectStart?: StartDetector,
+    ): Task<CmdOptions, Execution> & { taskName: string } {
+        const cmd = command.replace(/\s+/g, " ").trim();
+        const [executable, ...args] = cmd.split(" ");
+        if (!executable) { throw new Error("No executable given"); }
 
-    return Object.assign((input: CmdOptions): Execution => {
-        const child = spawn(executable, args, {
-            env: Object.assign({}, process.env, {
-                FORCE_COLOR: input.supportsColor ? "1" : undefined,
-            }),
-        });
+        return Object.assign((input: CmdOptions): Execution => {
+            const child = spwn(executable, args, { env: buildEnv(input) });
 
-        const output = merge(observableFromStream(child.stdout), observableFromStream(child.stderr));
-        const completed = new Promise<void>((res, rej) => {
-            child.on("error", err => {
-                rej(err);
+            const output = merge(observableFromStream(child.stdout), observableFromStream(child.stderr));
+            const completed = new Promise<void>((res, rej) => {
+                child.on("error", err => rej(err));
+                child.on("exit", (code, signal) => {
+                    if (code === 0) { return res(); }
+                    const reason = code !== null ? `non-zero code '${ code }'` : `signal '${ signal }'`;
+                    rej(new Error(`Terminated with ${ reason }: ${ cmd }`));
+                });
             });
-            child.on("exit", (code) => {
-                if (code !== 0) {
-                    rej(new Error(`Terminated with non-zero code '${ code }': ${ cmd }`));
-                } else {
-                    res();
-                }
-            });
-        });
 
-        return {
-            output,
-            completed,
-            kill: () => child.kill(),
-            started: !detectStart ? completed : new Promise(res => detectStart(output, res)),
-        };
-    }, { taskName: cmd });
+            const startDetected = !detectStart ? completed : new Promise<void>(res => detectStart(output, res));
+            const started = Promise.race([
+                startDetected.then(() => "started"),
+                completed.then(() => "completed"),
+            ]).then(condition => {
+                if (condition === "started") { return; }
+                throw new Error("Task completed before start was detected. Please check your start detection logic.");
+            });
+
+            return {
+                output,
+                started,
+                completed: Promise.all([started, completed]).then(noop),
+                kill: () => child.kill(),
+            };
+        }, { taskName: cmd });
+    };
 }
+
+// istanbul ignore next
+const buildEnv = (opts: CmdOptions) => Object.assign({
+    FORCE_COLOR: opts.supportsColor ? "1" : undefined,
+}, process.env);
+
+export const cmd = setupCmd(spawn, buildEnv);

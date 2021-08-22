@@ -47,6 +47,9 @@ function _parallelize<Input>(
             const execution = task(input);
             executions.set(task, {
                 ...execution,
+
+                // Output of the execution is handled within this call,
+                // so cached execution shouldn't have any.
                 output: Observable.of<Buffer>(),
             });
             return execution;

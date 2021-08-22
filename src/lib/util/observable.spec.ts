@@ -1,46 +1,22 @@
-import { Readable } from "stream";
 import * as Observable from "zen-observable";
 import { observableFromStream, observableStatus } from "./observable";
-import { deferred } from "./async";
 import { noop } from "./noop";
 import { expect } from "chai";
 import { SinonFakeTimers, useFakeTimers } from "sinon";
+import { createTestStream, TestStream } from "./create_test_stream";
 
 describe("Util / observable", () => {
     describe("observableFromStream", () => {
         let timers: SinonFakeTimers;
-        let stream: Readable;
+        let stream: TestStream<Buffer | string>;
         let observable: Observable<Buffer>;
         let capturedOutput: string;
-        let resolve: (val: string | Buffer | null) => void;
-        let reject: (err?: Error) => void;
         let status: ReturnType<typeof observableStatus>;
 
         beforeEach(async () => {
             timers = useFakeTimers();
-
-            let next = deferred();
-            resolve = async val => {
-                next.resolve(val);
-                next = deferred();
-                await timers.runAllAsync();
-            };
-            reject = async err => {
-                next.reject(err);
-                next = deferred();
-                await timers.runAllAsync();
-            };
-
-            async function* generate() {
-                while (true) {
-                    const val = await next.promise;
-                    if (val === null) { return; }
-                    yield val;
-                }
-            }
-
-            stream = Readable.from(generate());
-            observable = observableFromStream(stream);
+            stream = createTestStream(timers);
+            observable = observableFromStream(stream.stream);
             status = observableStatus(observable);
 
             capturedOutput = "";
@@ -51,17 +27,17 @@ describe("Util / observable", () => {
         });
 
         it("Should pipe the values from the stream", async () => {
-            await resolve("a");
-            await resolve(Buffer.from("b"));
-            await resolve("c");
+            await stream.write("a");
+            await stream.write(Buffer.from("b"));
+            await stream.write("c");
             expect(capturedOutput).to.equal("abc");
         });
 
         it("Should replay historical values for new subscriptions when stream is closed", async () => {
-            await resolve("a");
-            await resolve("b");
-            await resolve("c");
-            await resolve(null);
+            await stream.write("a");
+            await stream.write("b");
+            await stream.write("c");
+            await stream.terminate();
 
             let localOutput = "";
             observable.map(x => x.toString("utf8"))
@@ -73,10 +49,10 @@ describe("Util / observable", () => {
         });
 
         it("Should replay historical values for new subscriptions when stream has errored", async () => {
-            await resolve("a");
-            await resolve("b");
-            await resolve("c");
-            await reject(new Error("err"));
+            await stream.write("a");
+            await stream.write("b");
+            await stream.write("c");
+            await stream.raise(new Error("err"));
 
             let localOutput = "";
             observable.map(x => x.toString("utf8"))
@@ -87,7 +63,7 @@ describe("Util / observable", () => {
         });
 
         it("Should mark new subscriptions rejected when stream has errored", async () => {
-            await reject(new Error("err"));
+            await stream.raise(new Error("err"));
             const status = observableStatus(observable.map(x => x.toString("utf8")));
             await timers.runAllAsync();
             expect(status()).to.equal("rejected");
@@ -97,18 +73,18 @@ describe("Util / observable", () => {
             let localOutput = "";
             observable.map(x => x.toString("utf8")).subscribe(x => { localOutput += x; });
 
-            await resolve("val");
+            await stream.write("val");
             await timers.runAllAsync();
             expect(localOutput).to.equal("val");
         });
 
         it("Should complete the observable when stream closes", async () => {
-            await resolve(null);
+            await stream.terminate();
             expect(status()).to.equal("completed");
         });
 
         it("Should mark the stream as rejected if stream errors", async () => {
-            await reject(new Error("err"));
+            await stream.raise(new Error("err"));
             expect(status()).to.equal("rejected");
         });
     });
