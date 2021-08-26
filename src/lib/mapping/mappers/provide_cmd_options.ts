@@ -3,8 +3,9 @@ import { supportsColor } from "chalk";
 import { Meta, Output, Task } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 import { Any, Object } from "ts-toolbelt";
+import { UnionOmit } from "../../util/types";
 
-type UnionOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
 export function setupCmdOptionsProvider(getOptions: () => CmdOptions) {
     return function provideCmdOptions<I extends Object.Optional<CmdOptions>, T extends Task<I, unknown>>(
         task: Any.Cast<T, Task<I, unknown>>,

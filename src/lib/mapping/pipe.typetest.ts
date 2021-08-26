@@ -9,8 +9,8 @@ import {
 import { pipe } from "./pipe";
 import { Any, Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
+import { UnionOmit } from "../util/types";
 
-type UnionOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
 declare function identity<T extends Fn>(task: T): T;
 declare function extra<T extends Fn>(task: T): Task<Input<T> & { extraInput: string }, Output<T> & { extraOutput: string }> & Meta<T> & { extraMeta: string };

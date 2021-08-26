@@ -33,5 +33,5 @@ export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions): Exe
     const mocha = `mocha -A ${ opts.bail ? "--bail" : "" } ${ opts.debug ? "--inspect=5252 --inspect-brk" : "" } -t 5000 ${ mochaIncludes.map(incl => `-r ${ incl }`).join(" ") } ${ opts.spec || defaultTestSpec }`;
     const command = `${ (opts.coverage ? nyc : "") } ${ mocha }`;
 
-    return cmd(command)(opts); // TODO: better way to compose commands? This, for example, looses task metadata
+    return cmd(command)(opts);
 }, { taskName: "mocha" });

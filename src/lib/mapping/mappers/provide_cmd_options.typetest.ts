@@ -1,4 +1,4 @@
-import { provideCmdOptions } from "./provideCmdOptions";
+import { provideCmdOptions } from "./provide_cmd_options";
 import { Task } from "../../work_api";
 import { CmdOptions } from "../../runners/cmd";
 

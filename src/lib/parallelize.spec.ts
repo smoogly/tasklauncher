@@ -7,8 +7,11 @@ import { createTestTask, TestTask } from "./util/create_test_task";
 import { observableStatus } from "./util/observable";
 import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";
-import { Task, Work } from "./work_api";
+import { Input, Meta, Output, Task, Work } from "./work_api";
 import { Execution } from "./execution";
+import { map } from "./mapping/map";
+import { copyMeta } from "./util/meta";
+import { isNotNull } from "./util/typeguards";
 
 
 describe("parallelize", () => {
@@ -495,5 +498,43 @@ describe("parallelize", () => {
         await timers.runAllAsync();
 
         expect(output).to.equal(commonTaskOutput);
+    });
+
+    it("Should resolve with null stats for noop execution when completed", async () => {
+        const stats = await parallelize(work())({}).completed;
+        expect(stats).to.deep.equal({ stats: null, dependencies: [] });
+    });
+
+    it("Should resolve with execution stats for the task tree when completed", async () => {
+        const taggedCommon = Object.assign(common.task, { tag: "common" });
+        const branch1 = work(Object.assign(dep1.task, { tag: "dep1" })).after(taggedCommon);
+        const branch2 = work(Object.assign(dep2.task, { tag: "dep2" })).after(taggedCommon);
+        const allWork = work(Object.assign(target.task, { tag: "target" })).after(branch1, branch2);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function tagExecution<T extends Task<any, object> & { tag: string }>(fn: T) {
+            function tagged(input: Input<T>) {
+                return { ...fn(input), tag: fn.tag };
+            }
+
+            return copyMeta(tagged, fn) as Task<Input<T>, Output<T> & { tag: string }> & Meta<T>;
+        }
+
+        const execution = parallelize(map(allWork, tagExecution))();
+
+        const tasks = [common, dep1, dep2, target];
+        tasks.forEach(t => {
+            t.start.resolve();
+            t.completion.resolve();
+        });
+        await timers.runAllAsync();
+
+        const stats = await execution.completed;
+        expect(stats.stats?.task.tag).to.equal("target");
+        expect(stats.stats?.output.tag).to.equal("target");
+        expect(stats.dependencies).to.have.lengthOf(2);
+
+        const getTags = (s: typeof stats): string[] => [s.stats?.output.tag ?? null, ...s.dependencies.flatMap(getTags)].filter(isNotNull);
+        expect(getTags(stats)).to.deep.equal(["target", "dep1", "common", "dep2", "common"]);
     });
 });

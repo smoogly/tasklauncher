@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { formatDuration } from "./time";
+import { alignDurations, formatDuration } from "./time";
+
 
 describe("Util / Time", () => {
     describe("formatDuration", () => {
@@ -29,6 +30,42 @@ describe("Util / Time", () => {
 
         it("Should throw if duration is negative", async () => {
             expect(() => formatDuration(-1)).to.throw(/negative/i);
+        });
+
+        it("Should use the provided unit if given", async () => {
+            expect(formatDuration(100, { magnitude: 2, unit: "zzz" })).to.equal("50zzz");
+        });
+
+        it("Should use a fixed number format if unit requests it", async () => {
+            expect(formatDuration(100, { magnitude: 1, unit: "x", fixed: 4 })).to.equal("100.0000x");
+        });
+    });
+
+    describe("alignDurations", () => {
+        it("Should format durations in largest unit", async () => {
+            const align = alignDurations([1000, 1]);
+            expect(align(1)).to.match(/\ds$/);
+        });
+
+        it("Should align the smaller item to the end of largest", async () => {
+            const align = alignDurations([10, 1]);
+            expect(align(1)).to.match(/^ /);
+        });
+
+        it("Should align mixed items", async () => {
+            const align = alignDurations([10, 100, 1]);
+            expect(align(100)).to.equal("100.0ms");
+            expect(align(10)).to.equal(" 10.0ms");
+            expect(align(1)).to.equal("  1.0ms");
+        });
+
+        it("Should throw if no durations given", async () => {
+            expect(() => alignDurations([])).to.throw(/empty/i);
+        });
+
+        it("Should throw if given item was not presented in the initial list", async () => {
+            const align = alignDurations([10, 100, 1]);
+            expect(() => align(9999)).to.throw(/not in initial list/i);
         });
     });
 });

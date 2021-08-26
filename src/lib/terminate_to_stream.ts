@@ -1,7 +1,8 @@
-import { Execution } from "./execution";
 import { Writable } from "stream";
+import { ParallelizedExecution } from "./parallelize";
+import { Fn } from "./work_api";
 
-export const terminateToStream = (execution: Execution, stream: Writable) => {
+export const terminateToStream = (execution: ParallelizedExecution<Fn>, stream: Writable) => {
     let lastErr: unknown = {};
     const logError = (err: unknown) => {
         if (err === lastErr) { return; }
@@ -9,6 +10,7 @@ export const terminateToStream = (execution: Execution, stream: Writable) => {
         lastErr = err;
         const msg = err instanceof Error ? `${ err.message }\n${ err.stack }` : err;
         stream.write("\n" + msg + "\n");
+        process.exitCode = 1;
     };
 
     execution.output.subscribe(

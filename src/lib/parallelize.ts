@@ -2,31 +2,56 @@ import * as Observable from "zen-observable";
 import { merge } from "zen-observable/extras";
 
 import { getDependencies, getRootTask } from "./work";
-import { Fn, Task, Work } from "./work_api";
+import { Fn, Output, Task, Work } from "./work_api";
 import { Execution } from "./execution";
 import { noop } from "./util/noop";
+import { UnionOmit } from "./util/types";
+import { omit, typeKeys } from "./util/typeguards";
 
+
+export type Stats<T> = {
+    stats: T | null,
+    dependencies: Stats<T>[],
+};
+
+export type TaskExecutionStat<T extends Fn> = {
+    task: T,
+    output: UnionOmit<Output<T>, keyof Execution>,
+};
+
+type OmitOwnKey<T, K extends keyof T> = Omit<T, K>;
+export type ParallelizedExecution<T extends Fn> = OmitOwnKey<Execution, "completed"> & { completed: Promise<Stats<TaskExecutionStat<T>>> };
+
+const executionKeys = typeKeys<Execution>({
+    completed: null,
+    started: null,
+    output: null,
+    kill: null,
+});
 
 const infinitePromise = new Promise(noop);
-function _parallelize<Input>(
-    work: Work<Task<Input, Execution>>,
-    executions: WeakMap<Fn, Execution>,
+function _parallelize<In, Out extends Execution, Meta>(
+    work: Work<Task<In, Out> & Meta>,
+    executions: WeakMap<Fn, Out>,
     isRoot: boolean,
-): Task<Input, Execution> {
+): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
+    type ThisTask = Task<In, Out> & Meta;
+    type ThisExecution = ParallelizedExecution<ThisTask>;
+
     const task = getRootTask(work);
     const dependencies = getDependencies(work).map(dep => _parallelize(dep, executions, false));
 
-    return (input: Input): Execution => {
+    return (input: In): ThisExecution => {
         const dependentExecutions = dependencies.map(dep => dep(input));
 
-        const killedDependencies: Execution[] = [];
-        const killDependency = (dependency: Execution) => {
+        const killedDependencies: ThisExecution[] = [];
+        const killDependency = (dependency: ThisExecution) => {
             if (killedDependencies.includes(dependency)) { return; }
             killedDependencies.push(dependency);
             dependency.kill();
         };
 
-        const killOtherDependencies = (dependency: Execution) => (err: unknown) => {
+        const killOtherDependencies = (dependency: ThisExecution) => (err: unknown) => {
             dependentExecutions
                 .filter(other => other !== dependency)
                 .forEach(killDependency);
@@ -62,8 +87,15 @@ function _parallelize<Input>(
             if (!isRoot) { return; }
             dependentExecutions.forEach(killDependency);
         }).catch(noop);
-        const completed = Promise.all([targetCompleted, ...dependentExecutions.map(dep => dep.completed)]).then(noop);
+
         const started = Promise.race([targetStarted, dependenciesCompleted.then(() => infinitePromise)]).then(noop);
+        const completed = Promise.all([targetExecution, targetCompleted, dependenciesCompleted])
+            .then(([execution, _, dependencyStats]): Stats<TaskExecutionStat<ThisTask>> => {
+                const ownStats: TaskExecutionStat<ThisTask> | null = execution && task
+                    ? { task, output: omit(execution as Output<ThisTask>, executionKeys) }
+                    : null;
+                return { stats: ownStats, dependencies: dependencyStats };
+            });
 
         const ownOutput = new Observable<Buffer>(s => {
             const handleError = (err: unknown) => {
@@ -82,9 +114,7 @@ function _parallelize<Input>(
         });
 
         let executionCompleted = false;
-        completed.catch(noop).then(() => {
-            executionCompleted = true;
-        }).catch(noop);
+        completed.catch(noop).then(() => { executionCompleted = true; }).catch(noop);
 
         return {
             kill: () => {
@@ -101,6 +131,6 @@ function _parallelize<Input>(
     };
 }
 
-export function parallelize<Input>(work: Work<Task<Input, Execution>>): Task<Input, Execution> {
+export function parallelize<In, Out extends Execution, Meta>(work: Work<Task<In, Out> & Meta>): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
     return _parallelize(work, new WeakMap(), true);
 }
