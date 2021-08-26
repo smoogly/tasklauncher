@@ -4,6 +4,8 @@ import { Execution } from "../../execution";
 import { expect } from "chai";
 import { SinonFakeTimers, useFakeTimers } from "sinon";
 import { noop } from "../../util/noop";
+import * as Observable from "zen-observable";
+import { parallelize } from "../../parallelize";
 
 describe("Mappers / Buffer before start", () => {
     let task: TestTask;
@@ -46,6 +48,27 @@ describe("Mappers / Buffer before start", () => {
         expect(capturedOutput).to.equal("helloworld");
     });
 
+    it("Should only emit output once", async () => {
+        const taskOutput = "output";
+        const tsk = (_val: 1): Execution => ({
+            kill: noop,
+            started: Promise.resolve(),
+            completed: Promise.resolve(),
+            output: new Observable<Buffer>(s => {
+                s.next(Buffer.from(taskOutput));
+                s.complete();
+            }),
+        });
+
+        const execution = parallelize(bufferBeforeStart(tsk))(1);
+
+        let output = "";
+        execution.output.subscribe(next => output += next.toString("utf8"));
+        await timers.runAllAsync();
+
+        expect(output).to.equal(taskOutput);
+    });
+
     it("Should emit output as it comes after the task is started", async () => {
         task.start.resolve();
         await timers.runAllAsync();
@@ -55,6 +78,27 @@ describe("Mappers / Buffer before start", () => {
 
         task.writeOutput("whop");
         expect(capturedOutput).to.equal("heywhop");
+    });
+
+    it("Should emit buffered output if the task start fails", async () => {
+        task.writeOutput("hello");
+        task.writeOutput("world");
+
+        task.start.reject();
+        await timers.runAllAsync();
+
+        expect(capturedOutput).to.equal("helloworld");
+    });
+
+    it("Should emit buffered output if the task completion fails", async () => {
+        task.writeOutput("hello");
+        task.writeOutput("world");
+
+        task.start.resolve();
+        task.completion.reject();
+        await timers.runAllAsync();
+
+        expect(capturedOutput).to.equal("helloworld");
     });
 
     it("Should copy the task metadata", async () => {

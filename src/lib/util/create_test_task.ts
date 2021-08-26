@@ -24,7 +24,7 @@ export const createTestTask = <T = void>(): TestTask<T> => {
         started: start.promise,
         completed: completion.promise,
         output: new Observable<Buffer>(s => {
-            Promise.all([completion, start]).catch(err => s.error(err));
+            Promise.all([completion.promise, start.promise]).catch(err => s.error(err));
             completion.promise.then(() => s.complete());
             writeOutput = output => s.next(Buffer.from(output));
         }),
