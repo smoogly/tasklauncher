@@ -206,7 +206,7 @@ describe("parallelize", () => {
     });
 
     it("Should kill the dependencies if root task failed", async () => {
-        target.task.rejects();
+        target.task.throws();
         parallelize(work(target.task).after(dep1.task, dep2.task))();
 
         dep1.start.resolve();
@@ -218,8 +218,8 @@ describe("parallelize", () => {
         expect(dep2.kill.calledOnce).to.equal(true);
     });
 
-    it("Should not run the root task if one of the dependencies rejects before start", async () => {
-        dep1.task.rejects();
+    it("Should not run the root task if one of the dependencies throws before start", async () => {
+        dep1.task.throws();
         parallelize(work(target.task).after(dep1.task, dep2.task))();
 
         dep1.start.resolve();
@@ -229,8 +229,8 @@ describe("parallelize", () => {
         expect(target.task.called).to.equal(false);
     });
 
-    it("Should kill other dependencies if one of the dependencies rejects before start", async () => {
-        dep1.task.rejects();
+    it("Should kill other dependencies if one of the dependencies throws before start", async () => {
+        dep1.task.throws();
         parallelize(work(target.task).after(dep1.task, dep2.task))();
         await timers.runAllAsync();
 
@@ -249,15 +249,15 @@ describe("parallelize", () => {
         expect(target.kill.calledOnce).to.equal(true);
     });
 
-    it("Should mark the execution completion rejected if one of the dependencies rejects before start", async () => {
-        dep1.task.rejects();
+    it("Should mark the execution completion rejected if one of the dependencies throws before start", async () => {
+        dep1.task.throws();
         const status = promiseStatus(parallelize(work(target.task).after(dep1.task, dep2.task))().completed);
         await timers.runAllAsync();
         expect(status()).to.equal("rejected");
     });
 
-    it("Should mark the execution start rejected if one of the dependencies rejects before start", async () => {
-        dep1.task.rejects();
+    it("Should mark the execution start rejected if one of the dependencies throws before start", async () => {
+        dep1.task.throws();
         const status = promiseStatus(parallelize(work(target.task).after(dep1.task, dep2.task))().started);
         await timers.runAllAsync();
         expect(status()).to.equal("rejected");
@@ -342,6 +342,34 @@ describe("parallelize", () => {
         expect(common.kill.called).to.equal(false);
     });
 
+    it("Should kill a common dependency after the tasks depending on it complete", async () => {
+        const branch1 = work(dep1.task).after(common.task);
+        const branch2 = work(dep2.task).after(common.task);
+        parallelize(work(target.task).after(branch1, branch2))();
+
+        common.start.resolve();
+        dep2.start.resolve();
+        dep1.start.resolve();
+        dep1.completion.resolve();
+        dep2.completion.resolve();
+        await timers.runAllAsync();
+
+        expect(common.kill.calledOnce).to.equal(true);
+    });
+
+    it("Should kill a common dependency if one of the tasks depending on it rejects", async () => {
+        const branch1 = work(dep1.task).after(common.task);
+        const branch2 = work(dep2.task).after(common.task);
+        parallelize(work(target.task).after(branch1, branch2))();
+
+        common.start.resolve();
+        dep2.start.resolve();
+        dep1.start.reject();
+        await timers.runAllAsync();
+
+        expect(common.kill.calledOnce).to.equal(true);
+    });
+
     it("Should provide the root task output as it is given", async () => {
         const execution = parallelize(target.task)();
 
@@ -398,15 +426,15 @@ describe("parallelize", () => {
         expect(Buffer.concat(captured).toString("utf8")).to.equal("before1before2after1after2");
     });
 
-    it("Should reject the observable if task rejects before start", async () => {
-        target.task.rejects();
+    it("Should reject the observable if task throws before start", async () => {
+        target.task.throws();
         const status = observableStatus(parallelize(target.task)().output);
         await timers.runAllAsync();
         expect(status()).to.equal("rejected");
     });
 
-    it("Should reject the observable if dependency rejects before start", async () => {
-        dep1.task.rejects();
+    it("Should reject the observable if dependency throws before start", async () => {
+        dep1.task.throws();
         const status = observableStatus(parallelize(work(target.task).after(dep1.task, dep2.task))().output);
         await timers.runAllAsync();
         expect(status()).to.equal("rejected");

@@ -32,14 +32,16 @@ const executionKeys = typeKeys<Execution>({
 const infinitePromise = new Promise(noop);
 function _parallelize<In, Out extends Execution, Meta>(
     work: Work<Task<In, Out> & Meta>,
-    executions: WeakMap<Fn, Out>,
-    isRoot: boolean,
+    executions: WeakMap<Fn, {
+        execution: Out,
+        useCount: number,
+    }>,
 ): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
     type ThisTask = Task<In, Out> & Meta;
     type ThisExecution = ParallelizedExecution<ThisTask>;
 
     const task = getRootTask(work);
-    const dependencies = getDependencies(work).map(dep => _parallelize(dep, executions, false));
+    const dependencies = getDependencies(work).map(dep => _parallelize(dep, executions));
 
     return (input: In): ThisExecution => {
         const dependentExecutions = dependencies.map(dep => dep(input));
@@ -67,24 +69,43 @@ function _parallelize<In, Out extends Execution, Meta>(
             if (!task || killed) { return null; }
 
             const cachedExecution = executions.get(task);
-            if (cachedExecution) { return cachedExecution; }
+            if (cachedExecution) {
+                cachedExecution.useCount += 1;
+                return cachedExecution.execution;
+            }
 
             const execution = task(input);
-            executions.set(task, {
-                ...execution,
 
-                // Output of the execution is handled within this call,
-                // so cached execution shouldn't have any.
-                output: Observable.of<Buffer>(),
-            });
-            return execution;
+            const originalKill = execution.kill;
+            const sharedKill = () => {
+                if (cached.useCount > 1) {
+                    cached.useCount--;
+                    return;
+                }
+
+                originalKill.call(execution);
+            };
+
+            const cached = {
+                execution: {
+                    ...execution,
+
+                    kill: sharedKill,
+
+                    // Output of the execution is handled within this call,
+                    // so cached execution shouldn't have any.
+                    output: Observable.of<Buffer>(),
+                },
+                useCount: 1,
+            };
+            executions.set(task, cached);
+            return { ...execution, kill: sharedKill };
         });
 
         const targetStarted = targetExecution.then(e => e?.started);
         const targetCompleted = targetExecution.then(e => e?.completed);
 
         Promise.all([targetStarted, targetCompleted]).catch(noop).then(() => {
-            if (!isRoot) { return; }
             dependentExecutions.forEach(killDependency);
         }).catch(noop);
 
@@ -132,5 +153,5 @@ function _parallelize<In, Out extends Execution, Meta>(
 }
 
 export function parallelize<In, Out extends Execution, Meta>(work: Work<Task<In, Out> & Meta>): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
-    return _parallelize(work, new WeakMap(), true);
+    return _parallelize(work, new WeakMap());
 }
