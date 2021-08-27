@@ -69,5 +69,18 @@ module.exports = {
     // Shadowing requires paying close attention during debug
     "no-shadow": "off",
     "@typescript-eslint/no-shadow": ["error"],
+
+    // No extra parens
+    "arrow-parens": ["error", "as-needed"],
+    "no-extra-parens": "off",
+    "@typescript-eslint/no-extra-parens": ["error", "all", {
+      "conditionalAssign": true,
+      "returnAssign": true,
+      "nestedBinaryExpressions": false,
+      "enforceForArrowConditionals": true,
+      "enforceForSequenceExpressions": true,
+      "enforceForNewInMemberExpressions": true,
+      "enforceForFunctionPrototypeMethods": true,
+    }],
   },
 };

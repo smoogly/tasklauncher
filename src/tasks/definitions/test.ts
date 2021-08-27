@@ -31,7 +31,7 @@ export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions): Exe
         "ts-node/register/transpile-only",
     ];
     const mocha = `mocha -A ${ opts.bail ? "--bail" : "" } ${ opts.debug ? "--inspect=5252 --inspect-brk" : "" } -t 100 -s 50 ${ mochaIncludes.map(incl => `-r ${ incl }`).join(" ") } ${ opts.spec || defaultTestSpec }`;
-    const command = `${ (opts.coverage ? nyc : "") } ${ mocha }`;
+    const command = `${ opts.coverage ? nyc : "" } ${ mocha }`;
 
     return cmd(command)(opts);
 }, { taskName: "mocha" });
