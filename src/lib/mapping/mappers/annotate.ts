@@ -13,39 +13,63 @@ export function setupAnnotator(spellDuration: (durationMs: number) => string) {
             const start = Date.now();
             const execution = task(input);
 
+            let onFailed: Promise<void> | null = null;
+            let onStarted: Promise<void> | null = null;
+            let onCompleted: Promise<void> | null = null;
+
+            const started = execution.started
+                .then(() => delay(1))
+                .then(() => onStarted)
+                .then(noop);
+
+            const completed = execution.completed
+                .then(() => delay(1))
+                .then(() => Promise.all([started, onCompleted]))
+                .then(noop)
+                .catch(err => Promise.resolve(onFailed).then(() => Promise.reject(err)));
+
             const output = new Observable<Buffer>(s => {
                 s.next(Buffer.from(`Running ${ task.taskName }\n`));
                 execution.output.subscribe(next => s.next(next), noop, noop);
 
-                let started = false;
-                let completed = false;
-                execution.completed.then(() => {
-                    completed = true;
-                    const message = `Completed ${ task.taskName }`;
-                    const timedMessage = started ? message : `${ message } in ${ spellDuration(Date.now() - start) }`;
-                    s.next(Buffer.from(chalk.green(timedMessage) + "\n"));
-                    s.complete();
-                }).catch(noop);
+                let hasStarted = false;
+                let hasCompleted = false;
 
-                execution.started
+                onCompleted = execution.completed
+                    .then(() => {
+                        hasCompleted = true;
+                        const message = `Completed ${ task.taskName }`;
+                        const timedMessage = hasStarted ? message : `${ message } in ${ spellDuration(Date.now() - start) }`;
+                        s.next(Buffer.from(chalk.green(timedMessage) + "\n"));
+                        s.complete();
+                    })
+                    .then(() => delay(1))
+                    .then(noop, noop);
+
+                onStarted = execution.started
                     .then(() => delay(1))
                     .then(() => {
-                        started = true;
-                        if (completed) { return; }
+                        hasStarted = true;
+                        if (hasCompleted) { return; }
                         const message = `Started ${ task.taskName } in ${ spellDuration(Date.now() - start) }`;
                         s.next(Buffer.from(chalk.green(message) + "\n"));
-                    }).catch(noop);
+                    })
+                    .then(() => delay(1))
+                    .then(noop, noop);
 
-                Promise.all([execution.started, execution.completed])
+                onFailed = Promise.all([execution.started, execution.completed])
                     .catch(e => {
                         s.next(Buffer.from(chalk.red(`Failed ${ task.taskName }`) + "\n"));
                         s.error(e);
                     })
-                    .catch(noop);
+                    .then(() => delay(1))
+                    .then(noop, noop);
             });
 
             return {
                 ...execution,
+                completed,
+                started,
                 output,
             };
         }

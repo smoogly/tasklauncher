@@ -58,6 +58,23 @@ describe("Mappers / Annotate", () => {
         expect(capturedOutput).to.contain(`Started ${ taskName }`);
     });
 
+    it("Should emit the start message before started promise is resolved", async () => {
+        task.start.resolve();
+
+        let started = false;
+        annotatedExecution.started.then(() => started = true);
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            if (capturedOutput.includes("Started")) { break; }
+            await timers.tickAsync(0.1);
+        }
+
+        expect(started).to.equal(false);
+        await timers.runAllAsync();
+        expect(started).to.equal(true);
+    });
+
     it("Should emit the time it took to start a long-running task", async () => {
         durationStr = "long-running task start duration";
         formatDuration.returns(durationStr);
@@ -74,6 +91,24 @@ describe("Mappers / Annotate", () => {
         await timers.runAllAsync();
 
         expect(capturedOutput).to.contain(`Completed ${ taskName }`);
+    });
+
+    it("Should emit the completion message before completion promise is resolved", async () => {
+        task.start.resolve();
+        task.completion.resolve();
+
+        let completed = false;
+        annotatedExecution.completed.then(() => completed = true);
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            if (capturedOutput.includes("Completed")) { break; }
+            await timers.tickAsync(0.1);
+        }
+
+        expect(completed).to.equal(false);
+        await timers.runAllAsync();
+        expect(completed).to.equal(true);
     });
 
     it("Should emit time it took to complete the task", async () => {
@@ -122,6 +157,24 @@ describe("Mappers / Annotate", () => {
         await timers.runAllAsync();
 
         expect(capturedOutput).to.contain(`Failed ${ taskName }`);
+    });
+
+    it("Should emit that task failed before completion promise is rejected", async () => {
+        task.start.resolve();
+        task.completion.reject();
+
+        let failed = false;
+        annotatedExecution.completed.catch(() => failed = true);
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            if (capturedOutput.includes("Failed")) { break; }
+            await timers.tickAsync(0.1);
+        }
+
+        expect(failed).to.equal(false);
+        await timers.runAllAsync();
+        expect(failed).to.equal(true);
     });
 
     it("Should set observable rejected on error", async () => {
