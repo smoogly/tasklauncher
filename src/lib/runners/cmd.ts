@@ -12,7 +12,7 @@ import { merge } from "zen-observable/extras";
 import { noop } from "../util/noop";
 
 
-export type StartDetector = (output: Observable<Buffer>, started: () => void) => void;
+export type StartDetector = (output: Observable<Buffer>) => Promise<void>;
 export type CmdOptions = { supportsColor?: boolean };
 
 export type CMDSpawnType = (command: string, args: ReadonlyArray<string>, options: SpawnOptionsWithoutStdio) => Pick<ChildProcessWithoutNullStreams, "stdout" | "stderr" | "on" | "kill">;
@@ -38,7 +38,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
                 });
             });
 
-            const startDetected = !detectStart ? completed : new Promise<void>(res => detectStart(output, res));
+            const startDetected = !detectStart ? completed : detectStart(output);
             const started = Promise.race([
                 startDetected.then(() => "started"),
                 completed.then(() => "completed"),

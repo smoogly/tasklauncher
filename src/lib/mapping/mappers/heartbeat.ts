@@ -31,9 +31,11 @@ export function setupHeartbeat(
     };
 }
 
+export const HEARTBEAT_INTERVAL_MS = 1000 * 60;
+
 // istanbul ignore next — trivial scheduling
 const scheduleHeartbeat = (cb: () => void) => {
-    const heartbeatTimer = setInterval(cb, 1000 * 60);
+    const heartbeatTimer = setInterval(cb, HEARTBEAT_INTERVAL_MS);
     return () => clearInterval(heartbeatTimer);
 };
 

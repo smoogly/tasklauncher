@@ -1,10 +1,10 @@
-import { setupCmd, CMDSpawnType, CmdOptions } from "./cmd";
+import { CmdOptions, CMDSpawnType, setupCmd } from "./cmd";
 import { SinonFakeTimers, SinonStub, stub, useFakeTimers } from "sinon";
 import { createTestStream, TestStream } from "../util/create_test_stream";
 import { ChildProcess } from "child_process";
 import { expect } from "chai";
 import { noop } from "../util/noop";
-import { promiseStatus } from "../util/async";
+import { deferred, Deferred, promiseStatus } from "../util/async";
 import * as Observable from "zen-observable";
 
 describe("Runners / cmd", () => {
@@ -158,9 +158,11 @@ describe("Runners / cmd", () => {
     });
 
     describe("with start detection", () => {
-        let detectStart: SinonStub<[Observable<Buffer>, () => void], void>;
+        let start: Deferred<void>;
+        let detectStart: SinonStub<[Observable<Buffer>], Promise<void>>;
         beforeEach(async () => {
-            detectStart = stub();
+            start = deferred();
+            detectStart = stub<[Observable<Buffer>], Promise<void>>().returns(start.promise);
             task = cmd(command, detectStart);
         });
 
@@ -170,24 +172,22 @@ describe("Runners / cmd", () => {
             expect(detectStart.firstCall.firstArg).to.equal(output);
         });
 
-        it("Should mark the task started when detectStart calls the callback", async () => {
+        it("Should mark the task started when detectStart resolves", async () => {
             const status = promiseStatus(task(cmdOptions).started);
-            detectStart.firstCall.lastArg();
+            start.resolve();
             await timers.runAllAsync();
             expect(status()).to.equal("resolved");
         });
 
-        it("Should mark the task start rejected if detectStart fails", async () => {
-            const err = new Error("Failure detecting start");
-            detectStart.throws(err);
+        it("Should mark the task start rejected if detectStart rejects", async () => {
+            start.reject(new Error("Failure detecting start"));
             const status = promiseStatus(task(cmdOptions).started);
             await timers.runAllAsync();
             expect(status()).to.equal("rejected");
         });
 
-        it("Should mark the task completion rejected if detectStart fails", async () => {
-            const err = new Error("Failure detecting start");
-            detectStart.throws(err);
+        it("Should mark the task completion rejected if detectStart rejects", async () => {
+            start.reject(new Error("Failure detecting start"));
             const status = promiseStatus(task(cmdOptions).completed);
             await timers.runAllAsync();
             expect(status()).to.equal("rejected");
