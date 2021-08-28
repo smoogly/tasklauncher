@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { createTestTask, TestTask } from "./util/create_test_task";
+import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { getDependencies, getRootTask, work } from "./work";
 import { Fn, TaskTree } from "./work_api";
 

@@ -1,9 +1,9 @@
 import { detectLog } from "./detect_log";
 import * as Observable from "zen-observable";
 import { observableFromStream } from "./observable";
-import { createTestStream, TestStream } from "./create_test_stream";
+import { createTestStream, TestStream } from "../test_util/create_test_stream";
 import { SinonFakeTimers, useFakeTimers } from "sinon";
-import { promiseStatus } from "./async";
+import { promiseStatus } from "../test_util/async";
 import { expect } from "chai";
 
 describe("Util / DetectLog", () => {

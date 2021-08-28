@@ -3,7 +3,7 @@ import { copyMeta } from "../../util/meta";
 import * as Observable from "zen-observable";
 import { noop } from "../../util/noop";
 import * as chalk from "chalk";
-import { delay } from "../../util/async";
+import { delay } from "../../util/delay";
 import { formatDuration } from "../../util/time";
 import { Executable } from "../../execution";
 

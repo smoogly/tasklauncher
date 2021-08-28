@@ -1,6 +1,6 @@
 import { setupTagger } from "./tag";
 import { SinonFakeTimers, SinonStub, stub, useFakeTimers } from "sinon";
-import { createTestTask, TestTask } from "../../util/create_test_task";
+import { createTestTask, TestTask } from "../../test_util/create_test_task";
 import { Execution } from "../../execution";
 import { expect } from "chai";
 import { noop } from "../../util/noop";

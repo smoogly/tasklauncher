@@ -1,4 +1,4 @@
-import { createTestTask, TestTask } from "./util/create_test_task";
+import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { expect } from "chai";
 import { work } from "./work";
 

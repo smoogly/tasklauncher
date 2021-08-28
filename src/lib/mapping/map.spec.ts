@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { SinonStub, stub } from "sinon";
-import { createTestTask, TestTask } from "../util/create_test_task";
+import { createTestTask, TestTask } from "../test_util/create_test_task";
 import { Fn, Input, TaskTree, TreeBuilder, WorkType } from "../work_api";
 import { isTaskTree, work } from "../work";
 import { map } from "./map";

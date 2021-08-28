@@ -7,7 +7,7 @@ import {
     extractTaskDurations,
 } from "./critical_path";
 import { expect } from "chai";
-import { createTestTask } from "../util/create_test_task";
+import { createTestTask } from "../test_util/create_test_task";
 import { map } from "../mapping/map";
 import { recordDuration } from "../mapping/mappers/record_duration";
 

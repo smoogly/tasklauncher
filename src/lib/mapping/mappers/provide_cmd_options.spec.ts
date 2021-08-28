@@ -1,7 +1,7 @@
 import { setupCmdOptionsProvider } from "./provide_cmd_options";
 import { SinonStub, stub } from "sinon";
 import { CmdOptions } from "../../runners/cmd";
-import { createTestTask } from "../../util/create_test_task";
+import { createTestTask } from "../../test_util/create_test_task";
 import { expect } from "chai";
 
 describe("Mappers / ProvideCmdOptions", () => {

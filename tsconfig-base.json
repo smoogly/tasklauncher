@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "types": [
+      "node",
+      "mocha"
+    ],
+    "module": "commonjs",
+    "target": "es2015",
+    "sourceMap": true,
+    "lib": ["esnext"],
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": false,
+    "downlevelIteration": false,
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "baseUrl": "src",
+    "rootDir": "src",
+    "allowJs": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "importHelpers": true,
+    "noEmitHelpers": true,
+    "noEmitOnError": true,
+    "noUncheckedIndexedAccess": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true,
+  }
+}

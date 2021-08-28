@@ -3,7 +3,7 @@ import { observableFromStream, observableStatus } from "./observable";
 import { noop } from "./noop";
 import { expect } from "chai";
 import { SinonFakeTimers, useFakeTimers } from "sinon";
-import { createTestStream, TestStream } from "./create_test_stream";
+import { createTestStream, TestStream } from "../test_util/create_test_stream";
 
 describe("Util / observable", () => {
     describe("observableFromStream", () => {

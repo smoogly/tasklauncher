@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import * as Observable from "zen-observable";
 import { parallelize } from "./parallelize";
-import { promiseStatus } from "./util/async";
+import { promiseStatus } from "./test_util/async";
 import { work } from "./work";
-import { createTestTask, TestTask } from "./util/create_test_task";
+import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { observableStatus } from "./util/observable";
 import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";

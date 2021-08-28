@@ -1,10 +1,10 @@
 import { CmdOptions, CMDSpawnType, setupCmd } from "./cmd";
 import { SinonFakeTimers, SinonStub, stub, useFakeTimers } from "sinon";
-import { createTestStream, TestStream } from "../util/create_test_stream";
+import { createTestStream, TestStream } from "../test_util/create_test_stream";
 import { ChildProcess } from "child_process";
 import { expect } from "chai";
 import { noop } from "../util/noop";
-import { deferred, Deferred, promiseStatus } from "../util/async";
+import { deferred, Deferred, promiseStatus } from "../test_util/async";
 import * as Observable from "zen-observable";
 
 describe("Runners / cmd", () => {

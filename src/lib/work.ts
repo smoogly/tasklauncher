@@ -42,7 +42,7 @@ const _traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void
 const traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void) => _traversePostVisit(tree, cb, []);
 
 const exactlyOne = <T>(val: T[]): val is [T] => val.length === 1;
-export function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<Fn> {
+function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<Fn> {
     const workTree: TaskTree<Fn> = exactlyOne(tasks)
         ? {
             task: getRootTask(tasks[0]),

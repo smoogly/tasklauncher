@@ -1,4 +1,4 @@
-import { createTestTask } from "../../util/create_test_task";
+import { createTestTask } from "../../test_util/create_test_task";
 import { recordDuration } from "./record_duration";
 import { SinonFakeTimers, useFakeTimers } from "sinon";
 import { expect } from "chai";

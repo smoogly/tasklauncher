@@ -1,6 +1,5 @@
 import { objectKeys } from "../../lib/util/typeguards";
-import { cmd, CmdOptions } from "../../lib/runners/cmd";
-import { Execution } from "../../lib/execution";
+import { cmd, CmdOptions, Execution } from "../../lib";
 
 export const defaultTestSpec = "'src/**/*.spec.ts'";
 type UnitTestsParams = {

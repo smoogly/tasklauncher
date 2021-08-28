@@ -1,4 +1,4 @@
-import { noop } from "./noop";
+import { noop } from "../util/noop";
 
 type PromiseStatus = "running" | "resolved" | "rejected";
 export interface Deferred<T> {
@@ -28,5 +28,3 @@ export function deferred<T>(): Deferred<T> {
     const status = promiseStatus(promise);
     return { resolve, reject, promise, get status() { return status(); } };
 }
-
-export const delay = (delayMs: number) => new Promise(res => setTimeout(res, delayMs));

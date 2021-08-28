@@ -1,4 +1,4 @@
-import { createTestTask, TestTask } from "../../util/create_test_task";
+import { createTestTask, TestTask } from "../../test_util/create_test_task";
 import { setupHeartbeat } from "./heartbeat";
 import { SinonFakeTimers, SinonStub, stub, useFakeTimers } from "sinon";
 import { Execution } from "../../execution";
