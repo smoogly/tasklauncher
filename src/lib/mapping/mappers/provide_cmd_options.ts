@@ -6,10 +6,14 @@ import { Any, Object } from "ts-toolbelt";
 import { UnionOmit } from "../../util/types";
 
 
-export function setupCmdOptionsProvider(getOptions: () => CmdOptions) {
+export type WithCmdOptions<I extends Object.Optional<CmdOptions>, T extends Task<I, unknown>> = Task<UnionOmit<I, keyof CmdOptions>, Output<T>> & Meta<T>;
+export type CmdOptionsProvider = <I extends Object.Optional<CmdOptions>, T extends Task<I, unknown>>(
+    task: Any.Cast<T, Task<I, unknown>>
+) => WithCmdOptions<I, T>;
+export function setupCmdOptionsProvider(getOptions: () => CmdOptions): CmdOptionsProvider {
     return function provideCmdOptions<I extends Object.Optional<CmdOptions>, T extends Task<I, unknown>>(
         task: Any.Cast<T, Task<I, unknown>>,
-    ): Task<UnionOmit<I, keyof CmdOptions>, Output<T>> & Meta<T> {
+    ): WithCmdOptions<I, T> {
         const cmdOptionsProvider = (input: UnionOmit<I, keyof CmdOptions>) => {
             return task({ ...input, ...getOptions() } as unknown as I) as Output<T>;
         };

@@ -8,7 +8,7 @@ import { formatDuration } from "../../util/time";
 import { Executable } from "../../execution";
 
 export function setupAnnotator(spellDuration: (durationMs: number) => string) {
-    return function annotate<T extends Executable & { taskName: string }>(task: T) {
+    return function annotate<T extends Executable & { taskName: string }>(task: T): T {
         function annotated(input: Input<T>) {
             const start = Date.now();
             const execution = task(input);

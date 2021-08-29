@@ -6,7 +6,7 @@ import { Executable } from "../../execution";
 const NEWLINE_RE = /\n(?!$)/g;
 const ENDS_WITH_NEWLINE_RE = /\n$/;
 export function setupTagger(getTag: (taskName: string) => string) {
-    return function annotate<T extends Executable & { taskName: string }>(task: T) {
+    return function annotate<T extends Executable & { taskName: string }>(task: T): T {
         const tagStr = getTag(task.taskName);
         function tagged(input: Input<T>) {
             const execution = task(input);

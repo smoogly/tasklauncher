@@ -1,4 +1,4 @@
-import { Union } from "ts-toolbelt";
+import { ResolveIntersection } from "./util/types";
 
 // Deliberate any, arguments are contravariant, need a wide type for general compatibility.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,7 +22,7 @@ export type WorkType<T extends Work<Fn>> = T extends Fn ? T : T extends Work<inf
 type ResolveInput<T extends Work<Fn>> = T extends Task<infer I, infer _O> ? I
     : WorkType<T> extends Task<infer WI, infer _WO> ? WI
     : never;
-export type Input<T extends Work<Fn>> = Union.IntersectOf<ResolveInput<T>>;
+export type Input<T extends Work<Fn>> = ResolveIntersection<ResolveInput<T>>;
 
 export type Output<T extends Work<Fn>> = T extends Task<infer _I, infer O> ? O
     : WorkType<T> extends Task<infer _WI, infer WO> ? WO

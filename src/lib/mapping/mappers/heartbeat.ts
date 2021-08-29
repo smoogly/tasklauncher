@@ -10,7 +10,7 @@ export function setupHeartbeat(
     scheduleHeartbeat: (cb: () => void) => () => void,
     spellDuration: (durationMs: number) => string,
 ) {
-    return function heartbeat<T extends Executable & { taskName: string }>(task: T) {
+    return function heartbeat<T extends Executable & { taskName: string }>(task: T): T {
         function withHeartbeat(input: Input<T>) {
             const start = Date.now();
             const execution = task(input);

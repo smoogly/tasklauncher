@@ -1,5 +1,5 @@
 import { Input, Output, Task, Work, WorkType } from "./work_api";
-import { Test } from "ts-toolbelt";
+import { Any, Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 
 
@@ -16,7 +16,7 @@ Test.checks([
     Test.check<Input<TestTask1>, TestInput1, Pass>(),
     Test.check<Output<TestTask1>, TestOutput1, Pass>(),
 
-    Test.check<Input<TestTask1 | TestTask2>, TestInput1 & TestInput2, Pass>(),
+    Test.check<Input<TestTask1 | TestTask2>, Any.Compute<TestInput1 & TestInput2>, Pass>(),
 ]);
 
 Test.checks([
@@ -27,6 +27,11 @@ Test.checks([
     Test.check<Input<TestWork>, TestInput1, Pass>(),
     Test.check<Output<TestWork>, TestOutput1, Pass>(),
 
-    Test.check<Input<UnionWork>, TestInput1 & TestInput2, Pass>(),
+    Test.check<Input<UnionWork>, Any.Compute<TestInput1 & TestInput2>, Pass>(),
     Test.check<Output<UnionWork>, TestOutput1 | TestOutput2, Pass>(),
+]);
+
+Test.checks([
+    Test.check<Input<Task<Input<TestWork>, unknown>>, Input<TestWork>, Pass>(),
+    Test.check<Input<Task<Input<UnionWork>, unknown>>, Any.Compute<TestInput1 & TestInput2>, Pass>(),
 ]);
