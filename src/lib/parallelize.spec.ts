@@ -586,4 +586,14 @@ describe("parallelize", () => {
         const getTags = (s: typeof stats): string[] => [s.stats?.output.tag ?? null, ...s.dependencies.flatMap(getTags)].filter(isNotNull);
         expect(getTags(stats)).to.deep.equal(["target", "dep1", "common", "dep2", "common"]);
     });
+
+    it("Should reject start if task does not return an execution", async () => {
+        const status = promiseStatus(parallelize(
+            // @ts-expect-error, deliberately not returning an execution
+            () => 1,
+        )(void 0).started);
+
+        await timers.runAllAsync();
+        expect(status()).to.equal("rejected");
+    });
 });

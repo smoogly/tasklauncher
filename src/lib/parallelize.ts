@@ -3,7 +3,7 @@ import { merge } from "zen-observable/extras";
 
 import { getDependencies, getRootTask } from "./work";
 import { Fn, Output, Task, Work } from "./work_api";
-import { Execution } from "./execution";
+import { Execution, isExecution } from "./execution";
 import { noop } from "./util/noop";
 import { UnionOmit } from "./util/types";
 import { omit, typeKeys } from "./util/typeguards";
@@ -75,6 +75,7 @@ function _parallelize<In, Out extends Execution, Meta>(
             }
 
             const execution = task(input);
+            if (!isExecution(execution)) { throw new Error(`Expected task to return an execution object, instead got: ${ execution }`); }
 
             const originalKill = execution.kill;
             const sharedKill = () => {

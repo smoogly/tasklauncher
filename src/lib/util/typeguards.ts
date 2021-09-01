@@ -4,6 +4,7 @@ export function isNot<In, Out extends In>(guard: (val: In) => val is Out) { retu
 
 export function objectKeys<T extends object>(obj: T) { return Object.keys(obj) as Array<Exclude<keyof T, undefined>>; }
 export function typeKeys<T extends object = never>(val: { [P in keyof T]-?: null }): Array<keyof T> { return objectKeys(val); }
+export function hasKey<T extends object, K extends PropertyKey>(val: T, key: K): val is T & Record<K, unknown> { return key in val; }
 
 export function excludeKeys<All extends PropertyKey, Excl extends All>(all: ReadonlyArray<All>, exclude: ReadonlyArray<Excl>): Exclude<All, Excl>[] {
     const isExcluded = (val: All): val is Excl => exclude.includes(val as never);
