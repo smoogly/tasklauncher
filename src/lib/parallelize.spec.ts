@@ -370,6 +370,27 @@ describe("parallelize", () => {
         expect(common.kill.calledOnce).to.equal(true);
     });
 
+    it("Should not kill a common dependency when one dependent task has not started and others all completed", async () => {
+        parallelize(
+            work().after(
+                work(target.task).after(
+                    common.task,
+                    work(dep1.task).after(common.task),
+                ),
+                work(dep2.task).after(common.task),
+            ),
+        )();
+
+        common.start.resolve();
+        [dep1, dep2].forEach(t => {
+            t.start.resolve();
+            t.completion.resolve();
+        });
+        await timers.runAllAsync();
+
+        expect(common.kill.called).to.equal(false);
+    });
+
     it("Should provide the root task output as it is given", async () => {
         const execution = parallelize(target.task)();
 
