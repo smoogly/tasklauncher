@@ -1,3 +1,5 @@
+import { inspect } from "util";
+
 const defaultUnit = "ms";
 const durationUnits = new Map<number, string>([
     [1000 * 60 * 60, "h"],
@@ -32,7 +34,7 @@ export function alignDurations(durations: ReadonlyArray<number>): (duration: num
     const longest = formatted.map(s => s.length).reduce((a, b) => Math.max(a, b));
 
     return n => {
-        if (!durations.includes(n)) { throw new Error(`Given item was not in initial list: ${ n }`); }
+        if (!durations.includes(n)) { throw new Error(`Given item was not in initial list: ${ inspect(n) }`); }
         const str = formatDuration(n, largestUnit);
         return str.padStart(longest, " ");
     };

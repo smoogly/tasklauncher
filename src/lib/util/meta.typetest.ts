@@ -3,7 +3,7 @@ import { copyMeta } from "./meta";
 import { Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 
-type Target = Task<1, 2>;
+type Target = Task<{ targetIn: string }, { targetOut: string }> & { ownMeta: boolean };
 type Source1 = Task<{ input: string }, { output: number }> & { p1: string, conflict: number };
 type Source2 = Task<string, boolean> & { p2: boolean, conflict: string };
 
@@ -22,4 +22,14 @@ Test.checks([
     Test.check<Copy["p1"], Source1["p1"], Pass>(),
     Test.check<Copy["p2"], Source2["p2"], Pass>(),
     Test.check<Copy["conflict"], Source2["conflict"], Pass>(),
+    Test.check<Copy["ownMeta"], Target["ownMeta"], Pass>(),
 ]);
+
+copy(
+    // @ts-expect-error, source input must not match
+    1 as unknown as Input<Source1>,
+);
+copy(
+    // @ts-expect-error, source input must not match
+    1 as unknown as Input<Source2>,
+);

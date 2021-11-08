@@ -7,7 +7,7 @@ import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { observableStatus } from "./util/observable";
 import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";
-import { Input, Meta, Output, Task, Work } from "./work_api";
+import { Input, Meta, Output, Task, TreeBuilder, Work } from "./work_api";
 import { Execution } from "./execution";
 import { map } from "./mapping/map";
 import { copyMeta } from "./util/meta";
@@ -62,6 +62,18 @@ describe("parallelize", () => {
         });
     });
 
+    it("Should provide the input to further work returned by a task", async () => {
+        const input = { input: "input" };
+        const typedWork = work(target.task) as unknown as TreeBuilder<Task<typeof input, Execution>>;
+        const execution = parallelize(work((_arg: typeof input) => typedWork))(input);
+
+        target.start.resolve(); target.completion.resolve();
+        await execution.completed;
+
+        const mock = target.task as unknown as SinonStub<[typeof input], Execution>;
+        expect(mock.calledWithExactly(input)).to.equal(true);
+    });
+
     it("should execute dependencies before executing the target task", async () => {
         parallelize(work(target.task).after(dep1.task, dep2.task))();
         await timers.runAllAsync();
@@ -100,6 +112,29 @@ describe("parallelize", () => {
 
         expect(dep1.task.calledOnce).to.equal(true);
         expect(target.task.called).to.equal(false);
+    });
+
+    it("Should execute the further work returned by a task", async () => {
+        parallelize(work(() => () => () => work(target.task).after(dep1.task).after(dep2.task)))();
+
+        dep2.start.resolve(); dep2.completion.resolve();
+        dep1.start.resolve(); dep1.completion.resolve();
+        target.start.resolve(); target.completion.resolve();
+        await timers.runAllAsync();
+
+        [dep1.task, dep2.task, target.task].forEach(t => {
+            expect(t.calledOnce).to.equal(true);
+        });
+    });
+
+    it("Should execute the task after further work returned by a dependency was started", async () => {
+        parallelize(work(target.task).after(() => work(dep1.task, dep2.task)))();
+
+        dep1.start.resolve();
+        dep2.start.resolve();
+        await timers.runAllAsync();
+
+        expect(target.task.calledOnce).to.equal(true);
     });
 
     it("Should mark the noop execution started", async () => {
@@ -445,6 +480,18 @@ describe("parallelize", () => {
         dep1.writeOutput("after2");
         await timers.runAllAsync();
         expect(Buffer.concat(captured).toString("utf8")).to.equal("before1before2after1after2");
+    });
+
+    it("Should provide the output of further work returned by a task", async () => {
+        const execution = parallelize(work(() => work(target.task)))();
+
+        let captured: string | null = null;
+        execution.output.subscribe(x => { captured = x.toString("utf8"); });
+        await timers.runAllAsync();
+
+        target.writeOutput("output");
+        await timers.runAllAsync();
+        expect(captured).to.equal("output");
     });
 
     it("Should reject the observable if task throws before start", async () => {

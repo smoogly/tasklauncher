@@ -13,18 +13,18 @@ import { printCriticalPath } from "./print_critical_path";
 import { ResolveIntersection, UnionOmit } from "./util/types";
 import { CmdOptions } from "./runners/cmd";
 
-type Bag = Record<string, unknown>;
-export type DefaultTaskShape<TaskInput extends Bag> = Task<TaskInput, Execution> & { taskName: string };
-export type DefaultInput<TaskInput extends Bag> = ResolveIntersection<UnionOmit<TaskInput, keyof CmdOptions>>;
-export type DefaultMappedTask<TaskInput extends Bag> = Task<DefaultInput<TaskInput>, Execution & { duration: Promise<number | null> }> & { taskName: string };
-export const defaultMapper = <TaskInput extends Bag>(task: DefaultTaskShape<TaskInput>): DefaultMappedTask<TaskInput> => pipe(
+export type InputBag = Record<string, unknown>;
+export type DefaultTaskShape<TaskInput extends InputBag> = Task<TaskInput, Execution> & { taskName: string };
+export type DefaultInput<TaskInput extends InputBag> = ResolveIntersection<UnionOmit<TaskInput, keyof CmdOptions>>;
+export type DefaultMappedTask<TaskInput extends InputBag> = Task<DefaultInput<TaskInput>, Execution & { duration: Promise<number | null> }> & { taskName: string };
+export const defaultMapper = <TaskInput extends InputBag>(task: DefaultTaskShape<TaskInput>): DefaultMappedTask<TaskInput> => pipe(
     task,
     provideCmdOptions, bufferBeforeStart,
     annotate, heartbeat, tag,
     recordDuration,
 );
 
-export type Exec = <Inp extends Bag>(work: Work<DefaultTaskShape<Inp>>, ...input: ExecutorInputArg<ResolveIntersection<DefaultInput<Inp>>>) => void;
+export type Exec = <Inp extends InputBag>(work: Work<DefaultTaskShape<Inp>>, ...input: ExecutorInputArg<ResolveIntersection<DefaultInput<Inp>>>) => void;
 export const exec: Exec = createExecutor(defaultMapper, execution => {
     terminateToStream(execution, process.stdout);
     printCriticalPath(execution, process.stdout);

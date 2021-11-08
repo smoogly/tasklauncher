@@ -8,10 +8,9 @@ import {
 } from "./critical_path";
 import { expect } from "chai";
 import { createTestTask } from "../test_util/create_test_task";
-import { map } from "../mapping/map";
 import { recordDuration } from "../mapping/mappers/record_duration";
 
-const getFn = (taskName: string) => Object.assign(map(createTestTask().task, recordDuration).task, { taskName });
+const getFn = (taskName: string) => Object.assign(recordDuration(createTestTask().task), { taskName });
 const stat = (name: string, duration: number, ...dependencies: Stats<TaskExecutionStat<CritPathExpectedTaskShape>>[]): Stats<TaskExecutionStat<CritPathExpectedTaskShape>> => ({
     stats: {
         task: getFn(name),

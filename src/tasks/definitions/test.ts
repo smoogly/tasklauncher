@@ -1,5 +1,5 @@
 import { objectKeys } from "../../lib/util/typeguards";
-import { cmd, CmdOptions, Execution } from "../../lib";
+import { cmd, CmdOptions } from "../../lib";
 
 export const defaultTestSpec = "'src/**/*.spec.ts'";
 type UnitTestsParams = {
@@ -8,7 +8,10 @@ type UnitTestsParams = {
     bail?: boolean,
     debug?: boolean,
 };
-export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions): Execution => {
+
+// TODO: remove explicit type annotation in favour of inferred types
+//       was: `WrappedTask<Task<UnitTestsParams & CmdOptions, Execution> & { taskName: string }> & { taskName: string }`
+export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions) => {
     const nycExcludes = [
         "**/*.spec.ts",
         "src/tasks/**",
@@ -32,5 +35,5 @@ export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions): Exe
     const mocha = `mocha -A ${ opts.bail ? "--bail" : "" } ${ opts.debug ? "--inspect=5252 --inspect-brk" : "" } -t 100 -s 50 ${ mochaIncludes.map(incl => `-r ${ incl }`).join(" ") } ${ opts.spec || defaultTestSpec }`;
     const command = `${ opts.coverage ? nyc : "" } ${ mocha }`;
 
-    return cmd(command)(opts);
+    return cmd(command);
 }, { taskName: "mocha" });

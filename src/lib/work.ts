@@ -1,20 +1,36 @@
-import { Fn, TaskTree, TreeBuilder, Work, WorkType } from "./work_api";
+import { Fn, TaskTree, TreeBuilder, Work, WorkType, WrappedTask } from "./work_api";
 import { noop } from "./util/noop";
+import { unreachable } from "./util/typeguards";
 
-export const isTreeBuilder = <T extends Fn>(wrk: Work<T>): wrk is TreeBuilder<T> => Boolean(wrk) && typeof wrk === "object" && "getWorkTree" in wrk;
-export const isTaskTree = <T extends Fn>(wrk: Work<T>): wrk is TaskTree<T> => Boolean(wrk) && typeof wrk === "object" && "task" in wrk;
+export function isTreeBuilder<T extends Fn>(wrk: Work<T>): wrk is TreeBuilder<T>;
+export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<Fn>;
+export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<Fn> {
+    return Boolean(wrk) && typeof wrk === "object" && wrk !== null && "getWorkTree" in wrk;
+}
 
-export function getRootTask<T extends Fn>(wrk: Work<T>): T | null {
+export function isTaskTree<T extends Fn>(wrk: Work<T>): wrk is TaskTree<T>;
+export function isTaskTree(wrk: unknown): wrk is TaskTree<Fn>;
+export function isTaskTree(wrk: unknown): wrk is TaskTree<Fn> {
+    return Boolean(wrk) && typeof wrk === "object" && wrk !== null && "task" in wrk;
+}
+
+export function isWork<T extends Fn>(val: Work<T>): val is Work<T>;
+export function isWork(val: unknown): val is Work<Fn>;
+export function isWork(val: unknown): val is Work<Fn> {
+    return typeof val === "function" || isTaskTree(val) || isTreeBuilder(val);
+}
+
+export function getRootTask<T extends Fn>(wrk: Work<T>): T | WrappedTask<T> | null {
     if (isTreeBuilder(wrk)) { return getRootTask(wrk.getWorkTree()); }
     if (isTaskTree(wrk)) { return wrk.task; }
     if (typeof wrk === "function") { return wrk; }
-    throw new Error(`Unexpected work type: ${ wrk }`);
+    return unreachable(wrk, "Unexpected work type");
 }
 export function getDependencies<T extends Fn>(wrk: Work<T>): TaskTree<T>[] {
     if (isTreeBuilder(wrk)) { return wrk.getWorkTree().dependencies; }
     if (isTaskTree(wrk)) { return wrk.dependencies; }
     if (typeof wrk === "function") { return []; }
-    throw new Error(`Unexpected work type: ${ wrk }`);
+    return unreachable(wrk, "Unexpected work type");
 }
 
 const hasProp = <K extends PropertyKey>(val: object, prop: K): val is Record<K, unknown> => prop in val;

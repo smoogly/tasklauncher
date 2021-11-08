@@ -1,7 +1,8 @@
+import { inspect } from "util";
 import * as Observable from "zen-observable";
 import { merge } from "zen-observable/extras";
 
-import { getDependencies, getRootTask } from "./work";
+import { getDependencies, getRootTask, isWork } from "./work";
 import { Fn, Output, Task, Work } from "./work_api";
 import { Execution, isExecution } from "./execution";
 import { noop } from "./util/noop";
@@ -33,7 +34,7 @@ const infinitePromise = new Promise(noop);
 function _parallelize<In, Out extends Execution, Meta>(
     work: Work<Task<In, Out> & Meta>,
     executions: WeakMap<Fn, {
-        execution: Out,
+        execution: ParallelizedExecution<Task<In, Out> & Meta>,
         useCount: number,
     }>,
 ): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
@@ -65,7 +66,7 @@ function _parallelize<In, Out extends Execution, Meta>(
         const dependenciesCompleted = Promise.all(dependentExecutions.map(dep => dep.completed.catch(killOtherDependencies(dep))));
 
         let killed = false;
-        const targetExecution = dependenciesStarted.then(() => {
+        const targetExecution = dependenciesStarted.then((): ThisExecution | null => {
             if (!task || killed) { return null; }
 
             const cachedExecution = executions.get(task);
@@ -74,24 +75,38 @@ function _parallelize<In, Out extends Execution, Meta>(
                 return cachedExecution.execution;
             }
 
-            const execution = task(input);
-            if (!isExecution(execution)) { throw new Error(`Expected task to return an execution object, instead got: ${ execution }`); }
+            const taskOutput = task(input);
+            if (isWork(taskOutput)) {
+                return _parallelize(taskOutput as Work<ThisTask>, executions)(input);
+            }
 
-            const originalKill = execution.kill;
+            if (!isExecution(taskOutput)) { throw new Error(`Expected task to return an execution object, instead got: ${ inspect(taskOutput) }`); }
+
+            const originalKill = taskOutput.kill;
             const sharedKill = () => {
                 if (cached.useCount > 1) {
                     cached.useCount--;
                     return;
                 }
 
-                originalKill.call(execution);
+                originalKill.call(taskOutput);
+            };
+
+            const execution: ThisExecution = {
+                ...taskOutput,
+                kill: sharedKill,
+                completed: taskOutput.completed.then(() => {
+                    const ownStats: TaskExecutionStat<ThisTask> = {
+                        task: task as ThisTask,
+                        output: omit(taskOutput, executionKeys) as TaskExecutionStat<ThisTask>["output"],
+                    };
+                    return { stats: ownStats, dependencies: [] };
+                }),
             };
 
             const cached = {
                 execution: {
                     ...execution,
-
-                    kill: sharedKill,
 
                     // Output of the execution is handled within this call,
                     // so cached execution shouldn't have any.
@@ -100,7 +115,7 @@ function _parallelize<In, Out extends Execution, Meta>(
                 useCount: 1,
             };
             executions.set(task, cached);
-            return { ...execution, kill: sharedKill };
+            return execution;
         });
 
         const targetStarted = targetExecution.then(e => e?.started);
@@ -111,12 +126,10 @@ function _parallelize<In, Out extends Execution, Meta>(
         }).catch(noop);
 
         const started = Promise.race([targetStarted, dependenciesCompleted.then(() => infinitePromise)]).then(noop);
-        const completed = Promise.all([targetExecution, targetCompleted, dependenciesCompleted])
-            .then(([execution, _, dependencyStats]): Stats<TaskExecutionStat<ThisTask>> => {
-                const ownStats: TaskExecutionStat<ThisTask> | null = execution && task
-                    ? { task, output: omit(execution as Output<ThisTask>, executionKeys) }
-                    : null;
-                return { stats: ownStats, dependencies: dependencyStats };
+        const completed = Promise.all([targetCompleted, dependenciesCompleted])
+            .then(([stats, dependencyStats]): Stats<TaskExecutionStat<ThisTask>> => {
+                if (!stats) { return { stats: null, dependencies: dependencyStats }; }
+                return { ...stats, dependencies: dependencyStats };
             });
 
         const ownOutput = new Observable<Buffer>(s => {

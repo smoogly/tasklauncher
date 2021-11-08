@@ -1,4 +1,4 @@
-import { Input, Output, Task, Meta } from "./work_api";
+import { Input, Output, Task, Meta, WrappedTask, WorkType } from "./work_api";
 import { Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 import { work } from "./work";
@@ -19,6 +19,7 @@ export type Dep2Meta = { dep2Meta: boolean };
 declare const targetTask: Task<TargetInput, TargetOutput> & TargetMeta;
 declare const dependency1: Task<Dep1Input, Dep1Output> & Dep1Meta;
 declare const dependency2: Task<Dep2Input, Dep2Output> & Dep2Meta;
+declare const wrappedTask: WrappedTask<typeof targetTask>;
 
 const parallel = work(targetTask, dependency1, dependency2);
 Test.checks([
@@ -27,7 +28,22 @@ Test.checks([
     Test.check<Meta<typeof parallel>, TargetMeta | Dep1Meta | Dep2Meta, Pass>(),         // Meta union
 ]);
 
-export const testWork = work(targetTask).after(dependency1, dependency2);
+const parallelWithWrappedTask = work(targetTask, dependency1, dependency2, wrappedTask);
+Test.checks([
+    Test.check<Input<typeof parallelWithWrappedTask>, TargetInput & Dep1Input & Dep2Input, Pass>(),     // Input intersection
+    Test.check<Output<typeof parallelWithWrappedTask>, TargetOutput | Dep1Output | Dep2Output, Pass>(), // Output union
+    Test.check<Meta<typeof parallelWithWrappedTask>, TargetMeta | Dep1Meta | Dep2Meta, Pass>(),         // Meta union
+]);
+
+declare const inferredWrappedTask: TargetMeta & ((_arg: TargetInput) => (typeof targetTask));
+const parallelWithInferredWrappedTask = work(targetTask, dependency1, dependency2, inferredWrappedTask);
+Test.checks([
+    Test.check<Input<typeof parallelWithInferredWrappedTask>, TargetInput & Dep1Input & Dep2Input, Pass>(),     // Input intersection
+    Test.check<Output<typeof parallelWithInferredWrappedTask>, TargetOutput | Dep1Output | Dep2Output, Pass>(), // Output union
+    Test.check<Meta<typeof parallelWithInferredWrappedTask>, TargetMeta | Dep1Meta | Dep2Meta, Pass>(),         // Meta union
+]);
+
+export const testWork = work(targetTask).after(dependency1, dependency2).after(wrappedTask);
 
 
 export type TestWorkOutput = TargetOutput | Dep1Output | Dep2Output; // Input intersection

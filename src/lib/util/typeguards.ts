@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import { UnionOmit } from "./types";
 
 export function isNot<In, Out extends In>(guard: (val: In) => val is Out) { return <T extends In>(val: T | Out): val is T => !guard(val); }
@@ -21,6 +22,6 @@ export const isNull = <T>(val: T | null): val is null => val === null;
 export const isNotNull = isNot(isNull);
 
 // istanbul ignore next — it is reasonable to not go inside this in tests
-export function unreachable(val: never): never {
-    throw new Error(`Reached an unexpected state with value: ${ val }`);
+export function unreachable(val: never, message = "Reached an unexpected state with value"): never {
+    throw new Error(`${ message }: ${ inspect(val) }`);
 }

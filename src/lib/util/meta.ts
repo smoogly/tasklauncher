@@ -2,9 +2,9 @@ import { Fn } from "../work_api";
 import { objectKeys } from "./typeguards";
 import { List } from "ts-toolbelt";
 
-type Meta<T> = { [P in keyof T]: T[P] };
+type RawMeta<T> = { [P in keyof T]: T[P] };
 type Reduce<Sources extends Fn[], Result> = {
-    "proceed": Reduce<List.Tail<Sources>, Omit<Result, keyof List.Head<Sources>> & Meta<List.Head<Sources>>>,
+    "proceed": Reduce<List.Tail<Sources>, Omit<Result, keyof List.Head<Sources>> & RawMeta<List.Head<Sources>>>,
     "stop": Result,
 }[List.Length<Sources> extends 0 ? "stop" : "proceed"];
 export function copyMeta<Target extends Fn, Sources extends Fn[]>(target: Target, ...sources: Sources) {
