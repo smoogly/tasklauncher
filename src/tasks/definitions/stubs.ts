@@ -1,5 +1,7 @@
 import { createTestTask, TestTask } from "../../lib/test_util/create_test_task";
-import { work, copyMeta, AnyTask } from "../../lib";
+import { AnyTask } from "../../lib/work_api";
+import { copyMeta } from "../../lib/util/meta";
+import { work } from "../../lib/work";
 
 const common = createTestTask<{}>();
 const dep1 = createTestTask<{}>();
