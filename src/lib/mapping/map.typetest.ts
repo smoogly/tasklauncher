@@ -1,6 +1,6 @@
 import { map } from "./map";
 import { testWork } from "../tree_builder.typetest";
-import { Input, Output, Task, Work } from "../work_api";
+import { Input, Output, SimpleTask, Fn, Work } from "../work_api";
 import { Any, Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 
@@ -11,8 +11,8 @@ Test.checks([
 ]);
 
 const mapped1 = map(testWork, 1 as unknown as <T>(val: T) => T);
-const mapped2 = map(1 as unknown as Work<Task<number, 2>>, 1 as unknown as <T extends Task<number, number>>(val: T) => T);
-const mapped3 = map(1 as unknown as Task<number, 2>, 1 as unknown as <T extends Task<number, number>>(val: T) => T);
+const mapped2 = map(1 as unknown as Work<SimpleTask<number, 2>>, 1 as unknown as <T extends Fn<number, number>>(val: T) => T);
+const mapped3 = map(1 as unknown as SimpleTask<number, 2>, 1 as unknown as <T extends Fn<number, number>>(val: T) => T);
 
 Test.checks([
     Test.check<Input<typeof mapped1>, Input<typeof testWork>, Pass>(),

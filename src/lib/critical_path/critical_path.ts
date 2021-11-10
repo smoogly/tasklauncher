@@ -1,11 +1,9 @@
-import { Task } from "../work_api";
+import { AnyInput, SimpleTask } from "../work_api";
 import { Execution } from "../execution";
 import { Stats, TaskExecutionStat } from "../parallelize";
 import { alignDurations, formatDuration } from "../util/time";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CritPathExpectedTaskShape = Task<any, Execution & { duration: Promise<number | null> }> & { taskName: string };
-
+export type CritPathExpectedTaskShape = SimpleTask<AnyInput, Execution & { duration: Promise<number | null> }> & { taskName: string };
 export async function criticalPath(executionStats: Stats<TaskExecutionStat<CritPathExpectedTaskShape>>) {
     if (depth(executionStats) < 2) { return null; } // Ignore all-parallel task trees
 

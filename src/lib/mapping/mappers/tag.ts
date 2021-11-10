@@ -1,12 +1,12 @@
 import { Input } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 import { md5 } from "../../util/md5";
-import { Executable } from "../../execution";
+import { ExecutableFn } from "../../execution";
 
 const NEWLINE_RE = /\n(?!$)/g;
 const ENDS_WITH_NEWLINE_RE = /\n$/;
 export function setupTagger(getTag: (taskName: string) => string) {
-    return function annotate<T extends Executable & { taskName: string }>(task: T): T {
+    return function annotate<T extends ExecutableFn & { taskName: string }>(task: T): T {
         const tagStr = getTag(task.taskName);
         function tagged(input: Input<T>) {
             const execution = task(input);
@@ -35,5 +35,5 @@ export function setupTagger(getTag: (taskName: string) => string) {
 }
 
 // istanbul ignore next — trivial invocation of md5
-const hashTag = (str: string) => `${ md5(str).slice(0, 6).toUpperCase() }  `;
+const hashTag = (str: string) => `${ md5(str).slice(0, 6).toUpperCase() }| `;
 export const tag = setupTagger(hashTag);

@@ -1,11 +1,12 @@
 import { expect } from "chai";
 import { SinonStub, stub } from "sinon";
 import { createTestTask, TestTask } from "../test_util/create_test_task";
-import { Fn, Input, TaskTree, TreeBuilder, WorkType, WrappedTask } from "../work_api";
+import { AnyTask, Input, TaskTree, TreeBuilder, WorkType } from "../work_api";
 import { getRootTask, isTaskTree, work } from "../work";
 import { map } from "./map";
 
-const traverse = <T extends Fn>(node: TaskTree<T>, cb: (task: T | WrappedTask<T>) => void): void => {
+const identity = <T>(val: T): T => val;
+const traverse = <T extends AnyTask>(node: TaskTree<T>, cb: (task: T) => void): void => {
     if (node.task) { cb(node.task); }
     node.dependencies.forEach(dep => traverse(dep, cb));
 };
@@ -18,7 +19,7 @@ describe("map", () => {
     let common: MarkedTestTask;
     let workTree: TreeBuilder<MarkedTestTask["task"]>;
 
-    let transform: SinonStub<[Fn], Fn>;
+    let transform: SinonStub<[AnyTask], AnyTask>;
     beforeEach(() => {
         const ctt = (marker: string): MarkedTestTask => {
             const t = createTestTask();
@@ -35,7 +36,7 @@ describe("map", () => {
         const branch2 = work(dep2.task).after(common.task);
         workTree = work(target.task).after(branch1, branch2);
 
-        transform = stub<[Fn], Fn>().returnsArg(0);
+        transform = stub<[AnyTask], AnyTask>().returnsArg(0);
     });
 
     it("Should call the transformation with every task in the tree", async () => {
@@ -92,13 +93,15 @@ describe("map", () => {
     });
 
     it("Should map the work returned by wrapper task", async () => {
-        const res = getRootTask(map(() => workTree, (original: MarkedTestTask["task"]) => { // TODO: remove explicit type annotation -- should work implicitly
+        const wrk = map(() => workTree, original => {
             const mapped = (arg: Input<typeof original>) => original(arg);
             return Object.assign(mapped, { original: original.marker });
-        }));
+        });
+
+        const res = getRootTask(wrk);
         if (!res) { throw new Error("Expected a task"); }
 
-        const furtherWork = res(void 0) as TaskTree<TestTask["task"] & { original: string }>; // TODO: remove type cast -- should work OK without one
+        const furtherWork = res();
         const markers: string[] = [];
         traverse(furtherWork, t => {
            if ("original" in t) { markers.push(t.original); }
@@ -108,11 +111,16 @@ describe("map", () => {
     });
 
     it("Should map the deeply nested work", async () => {
-        const res = getRootTask(map(() => () => () => workTree, transform));
+        const res = getRootTask(map(() => () => () => workTree, identity));
         if (!res) { throw new Error("Expected a task"); }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const furtherWork = (res(void 0) as any).task().task(); // TODO: remove type cast
+        const level1 = res(void 0).task;
+        if (!level1) { throw new Error("Expected a task"); }
+
+        const level2 = level1().task;
+        if (!level2) { throw new Error("Expected a task"); }
+
+        const furtherWork = level2();
         expect(isTaskTree(furtherWork)).to.equal(true);
         expect(furtherWork.task).to.haveOwnProperty("marker", target.task.marker);
     });

@@ -1,32 +1,32 @@
-import { Fn, TaskTree, TreeBuilder, Work, WorkType, WrappedTask } from "./work_api";
+import { AnyTask, TaskTree, TreeBuilder, Work, WorkType } from "./work_api";
 import { noop } from "./util/noop";
 import { unreachable } from "./util/typeguards";
 
-export function isTreeBuilder<T extends Fn>(wrk: Work<T>): wrk is TreeBuilder<T>;
-export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<Fn>;
-export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<Fn> {
+export function isTreeBuilder<T extends AnyTask>(wrk: Work<T>): wrk is TreeBuilder<T>;
+export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<AnyTask>;
+export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<AnyTask> {
     return Boolean(wrk) && typeof wrk === "object" && wrk !== null && "getWorkTree" in wrk;
 }
 
-export function isTaskTree<T extends Fn>(wrk: Work<T>): wrk is TaskTree<T>;
-export function isTaskTree(wrk: unknown): wrk is TaskTree<Fn>;
-export function isTaskTree(wrk: unknown): wrk is TaskTree<Fn> {
+export function isTaskTree<T extends AnyTask>(wrk: Work<T>): wrk is TaskTree<T>;
+export function isTaskTree(wrk: unknown): wrk is TaskTree<AnyTask>;
+export function isTaskTree(wrk: unknown): wrk is TaskTree<AnyTask> {
     return Boolean(wrk) && typeof wrk === "object" && wrk !== null && "task" in wrk;
 }
 
-export function isWork<T extends Fn>(val: Work<T>): val is Work<T>;
-export function isWork(val: unknown): val is Work<Fn>;
-export function isWork(val: unknown): val is Work<Fn> {
+export function isWork<T extends AnyTask>(val: Work<T>): val is Work<T>;
+export function isWork(val: unknown): val is Work<AnyTask>;
+export function isWork(val: unknown): val is Work<AnyTask> {
     return typeof val === "function" || isTaskTree(val) || isTreeBuilder(val);
 }
 
-export function getRootTask<T extends Fn>(wrk: Work<T>): T | WrappedTask<T> | null {
+export function getRootTask<T extends AnyTask>(wrk: Work<T>): T | null {
     if (isTreeBuilder(wrk)) { return getRootTask(wrk.getWorkTree()); }
     if (isTaskTree(wrk)) { return wrk.task; }
     if (typeof wrk === "function") { return wrk; }
     return unreachable(wrk, "Unexpected work type");
 }
-export function getDependencies<T extends Fn>(wrk: Work<T>): TaskTree<T>[] {
+export function getDependencies<T extends AnyTask>(wrk: Work<T>): TaskTree<T>[] {
     if (isTreeBuilder(wrk)) { return wrk.getWorkTree().dependencies; }
     if (isTaskTree(wrk)) { return wrk.dependencies; }
     if (typeof wrk === "function") { return []; }
@@ -34,11 +34,11 @@ export function getDependencies<T extends Fn>(wrk: Work<T>): TaskTree<T>[] {
 }
 
 const hasProp = <K extends PropertyKey>(val: object, prop: K): val is Record<K, unknown> => prop in val;
-function taskName(task: Fn): string {
+function taskName(task: AnyTask): string {
     if (hasProp(task, "taskName") && typeof task.taskName === "string" && task.taskName) { return task.taskName; }
     return task.name || task.toString() || "unknown";
 }
-const _traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void, visited: Fn[]) => {
+const _traversePostVisit = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>) => void, visited: AnyTask[]) => {
     if (tree.task && visited.includes(tree.task)) {
         const taskNames = [...visited, tree.task].map(taskName);
         const chainDescription = taskNames.some(t => t.includes("\n")) ? taskNames.join("\n↓\n") : taskNames.join(" -> ");
@@ -55,11 +55,11 @@ const _traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void
     tree.dependencies.forEach(node => _traversePostVisit(node, cb, tree.task ? [...visited, tree.task] : visited));
     cb(tree);
 };
-const traversePostVisit = (tree: TaskTree<Fn>, cb: (node: TaskTree<Fn>) => void) => _traversePostVisit(tree, cb, []);
+const traversePostVisit = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>) => void) => _traversePostVisit(tree, cb, []);
 
 const exactlyOne = <T>(val: T[]): val is [T] => val.length === 1;
-function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<Fn> {
-    const workTree: TaskTree<Fn> = exactlyOne(tasks)
+function _work(tasks: Work<AnyTask>[], dependencies: Work<AnyTask>[]): TreeBuilder<AnyTask> {
+    const workTree: TaskTree<AnyTask> = exactlyOne(tasks)
         ? {
             task: getRootTask(tasks[0]),
             dependencies: getDependencies(tasks[0]),
@@ -94,6 +94,6 @@ function _work(tasks: Work<Fn>[], dependencies: Work<Fn>[]): TreeBuilder<Fn> {
     };
 }
 
-export function work<WorkItems extends Work<Fn>[]>(...workItems: WorkItems): TreeBuilder<WorkType<WorkItems[number]>> {
+export function work<WorkItems extends Work<AnyTask>[]>(...workItems: WorkItems): TreeBuilder<WorkType<WorkItems[number]>> {
     return _work(workItems, []) as TreeBuilder<WorkType<WorkItems[number]>>;
 }

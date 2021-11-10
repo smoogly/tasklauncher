@@ -1,11 +1,11 @@
 import { parallelize } from "./parallelize";
-import { Task, Work } from "./work_api";
+import { Fn, Work } from "./work_api";
 import { Execution } from "./execution";
 import { map } from "./mapping/map";
 import { Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 
-declare const task: Task<{ input: string }, Execution & { res: number }> & { meta: string };
+declare const task: Fn<{ input: string }, Execution & { res: number }> & { meta: string };
 parallelize(task);
 
 declare const work: Work<typeof task>;

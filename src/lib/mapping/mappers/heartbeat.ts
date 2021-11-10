@@ -4,13 +4,13 @@ import { noop } from "../../util/noop";
 import { copyMeta } from "../../util/meta";
 import { formatDuration } from "../../util/time";
 import { once } from "../../util/once";
-import { Executable } from "../../execution";
+import { ExecutableFn } from "../../execution";
 
 export function setupHeartbeat(
     scheduleHeartbeat: (cb: () => void) => () => void,
     spellDuration: (durationMs: number) => string,
 ) {
-    return function heartbeat<T extends Executable & { taskName: string }>(task: T): T {
+    return function heartbeat<T extends ExecutableFn & { taskName: string }>(task: T): T {
         function withHeartbeat(input: Input<T>) {
             const start = Date.now();
             const execution = task(input);

@@ -5,7 +5,7 @@ import {
 } from "child_process";
 import * as Observable from "zen-observable";
 
-import { Task } from "../work_api";
+import { Fn } from "../work_api";
 import { observableFromStream } from "../util/observable";
 import { Execution } from "../execution";
 import { merge } from "zen-observable/extras";
@@ -20,7 +20,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
     return function cmd(
         command: string,
         detectStart?: StartDetector,
-    ): Task<CmdOptions, Execution> & { taskName: string } {
+    ): Fn<CmdOptions, Execution> & { taskName: string } {
         const trimmedCommand = command.replace(/\s+/g, " ").trim();
         const [executable, ...args] = trimmedCommand.split(" ");
         if (!executable) { throw new Error("No executable given"); }

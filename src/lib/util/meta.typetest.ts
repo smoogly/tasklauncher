@@ -1,11 +1,11 @@
-import { Input, Output, Task } from "../work_api";
+import { Input, Output, Fn } from "../work_api";
 import { copyMeta } from "./meta";
 import { Test } from "ts-toolbelt";
 import { Pass } from "ts-toolbelt/out/Test";
 
-type Target = Task<{ targetIn: string }, { targetOut: string }> & { ownMeta: boolean };
-type Source1 = Task<{ input: string }, { output: number }> & { p1: string, conflict: number };
-type Source2 = Task<string, boolean> & { p2: boolean, conflict: string };
+type Target = Fn<{ targetIn: string }, { targetOut: string }> & { ownMeta: boolean };
+type Source1 = Fn<{ input: string }, { output: number }> & { p1: string, conflict: number };
+type Source2 = Fn<string, boolean> & { p2: boolean, conflict: string };
 
 declare const target: Target;
 declare const source1: Source1;

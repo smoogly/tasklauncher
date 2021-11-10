@@ -3,7 +3,7 @@ import * as Observable from "zen-observable";
 import { merge } from "zen-observable/extras";
 
 import { getDependencies, getRootTask, isWork } from "./work";
-import { Fn, Output, Task, Work } from "./work_api";
+import { AnyTask, Input, Output, Fn, Work, SimpleTask, AnyInput } from "./work_api";
 import { Execution, isExecution } from "./execution";
 import { noop } from "./util/noop";
 import { UnionOmit } from "./util/types";
@@ -15,13 +15,13 @@ export type Stats<T> = {
     dependencies: Stats<T>[],
 };
 
-export type TaskExecutionStat<T extends Fn> = {
-    task: T,
+export type TaskExecutionStat<T extends AnyTask> = {
+    task: T, // TODO: should it be `SimpleTask<Input<T>, Output<T>> & Meta<T>`?
     output: UnionOmit<Output<T>, keyof Execution>,
 };
 
 type OmitOwnKey<T, K extends keyof T> = Omit<T, K>;
-export type ParallelizedExecution<T extends Fn> = OmitOwnKey<Execution, "completed"> & { completed: Promise<Stats<TaskExecutionStat<T>>> };
+export type ParallelizedExecution<T extends AnyTask> = OmitOwnKey<Execution, "completed"> & { completed: Promise<Stats<TaskExecutionStat<T>>> };
 
 const executionKeys = typeKeys<Execution>({
     completed: null,
@@ -31,30 +31,27 @@ const executionKeys = typeKeys<Execution>({
 });
 
 const infinitePromise = new Promise(noop);
-function _parallelize<In, Out extends Execution, Meta>(
-    work: Work<Task<In, Out> & Meta>,
-    executions: WeakMap<Fn, {
-        execution: ParallelizedExecution<Task<In, Out> & Meta>,
+function _parallelize<T extends SimpleTask<AnyInput, Execution>>(
+    work: Work<T>,
+    executions: WeakMap<AnyTask, {
+        execution: ParallelizedExecution<T>,
         useCount: number,
     }>,
-): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
-    type ThisTask = Task<In, Out> & Meta;
-    type ThisExecution = ParallelizedExecution<ThisTask>;
-
+): Fn<Input<T>, ParallelizedExecution<T>> {
     const task = getRootTask(work);
     const dependencies = getDependencies(work).map(dep => _parallelize(dep, executions));
 
-    return (input: In): ThisExecution => {
+    return (input: Input<T>): ParallelizedExecution<T> => { // TODO: stats of unwrapped tasks (e.g. chicken-katsu doesn't print critpath when tests depend on the database)
         const dependentExecutions = dependencies.map(dep => dep(input));
 
-        const killedDependencies: ThisExecution[] = [];
-        const killDependency = (dependency: ThisExecution) => {
+        const killedDependencies: ParallelizedExecution<T>[] = [];
+        const killDependency = (dependency: ParallelizedExecution<T>) => {
             if (killedDependencies.includes(dependency)) { return; }
             killedDependencies.push(dependency);
             dependency.kill();
         };
 
-        const killOtherDependencies = (dependency: ThisExecution) => (err: unknown) => {
+        const killOtherDependencies = (dependency: ParallelizedExecution<T>) => (err: unknown) => {
             dependentExecutions
                 .filter(other => other !== dependency)
                 .forEach(killDependency);
@@ -66,7 +63,7 @@ function _parallelize<In, Out extends Execution, Meta>(
         const dependenciesCompleted = Promise.all(dependentExecutions.map(dep => dep.completed.catch(killOtherDependencies(dep))));
 
         let killed = false;
-        const targetExecution = dependenciesStarted.then((): ThisExecution | null => {
+        const targetExecution = dependenciesStarted.then((): ParallelizedExecution<T> | null => {
             if (!task || killed) { return null; }
 
             const cachedExecution = executions.get(task);
@@ -77,7 +74,7 @@ function _parallelize<In, Out extends Execution, Meta>(
 
             const taskOutput = task(input);
             if (isWork(taskOutput)) {
-                return _parallelize(taskOutput as Work<ThisTask>, executions)(input);
+                return _parallelize(taskOutput as Work<T>, executions)(input);
             }
 
             if (!isExecution(taskOutput)) { throw new Error(`Expected task to return an execution object, instead got: ${ inspect(taskOutput) }`); }
@@ -92,14 +89,12 @@ function _parallelize<In, Out extends Execution, Meta>(
                 originalKill.call(taskOutput);
             };
 
-            const execution: ThisExecution = {
+            const execution: ParallelizedExecution<T> = {
                 ...taskOutput,
                 kill: sharedKill,
                 completed: taskOutput.completed.then(() => {
-                    const ownStats: TaskExecutionStat<ThisTask> = {
-                        task: task as ThisTask,
-                        output: omit(taskOutput, executionKeys) as TaskExecutionStat<ThisTask>["output"],
-                    };
+                    const output = omit(taskOutput, executionKeys) as TaskExecutionStat<T>["output"];
+                    const ownStats: TaskExecutionStat<T> = { task, output };
                     return { stats: ownStats, dependencies: [] };
                 }),
             };
@@ -127,7 +122,7 @@ function _parallelize<In, Out extends Execution, Meta>(
 
         const started = Promise.race([targetStarted, dependenciesCompleted.then(() => infinitePromise)]).then(noop);
         const completed = Promise.all([targetCompleted, dependenciesCompleted])
-            .then(([stats, dependencyStats]): Stats<TaskExecutionStat<ThisTask>> => {
+            .then(([stats, dependencyStats]): Stats<TaskExecutionStat<T>> => {
                 if (!stats) { return { stats: null, dependencies: dependencyStats }; }
                 return { ...stats, dependencies: dependencyStats };
             });
@@ -166,6 +161,6 @@ function _parallelize<In, Out extends Execution, Meta>(
     };
 }
 
-export function parallelize<In, Out extends Execution, Meta>(work: Work<Task<In, Out> & Meta>): Task<In, ParallelizedExecution<Task<In, Out> & Meta>> {
+export function parallelize<T extends SimpleTask<AnyInput, Execution>>(work: Work<T>): Fn<Input<T>, ParallelizedExecution<T>> {
     return _parallelize(work, new WeakMap());
 }

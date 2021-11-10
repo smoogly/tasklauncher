@@ -1,5 +1,5 @@
 import { objectKeys } from "../../lib/util/typeguards";
-import { cmd, CmdOptions } from "../../lib";
+import { cmd } from "../../lib";
 
 export const defaultTestSpec = "'src/**/*.spec.ts'";
 type UnitTestsParams = {
@@ -9,9 +9,7 @@ type UnitTestsParams = {
     debug?: boolean,
 };
 
-// TODO: remove explicit type annotation in favour of inferred types
-//       was: `WrappedTask<Task<UnitTestsParams & CmdOptions, Execution> & { taskName: string }> & { taskName: string }`
-export const unitTests = Object.assign((opts: UnitTestsParams & CmdOptions) => {
+export const unitTests = Object.assign((opts: UnitTestsParams) => {
     const nycExcludes = [
         "**/*.spec.ts",
         "src/tasks/**",

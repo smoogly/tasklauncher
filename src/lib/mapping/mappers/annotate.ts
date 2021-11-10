@@ -5,10 +5,10 @@ import { noop } from "../../util/noop";
 import * as chalk from "chalk";
 import { delay } from "../../util/delay";
 import { formatDuration } from "../../util/time";
-import { Executable } from "../../execution";
+import { ExecutableFn } from "../../execution";
 
 export function setupAnnotator(spellDuration: (durationMs: number) => string) {
-    return function annotate<T extends Executable & { taskName: string }>(task: T): T {
+    return function annotate<T extends ExecutableFn & { taskName: string }>(task: T): T {
         function annotated(input: Input<T>) {
             const start = Date.now();
             const execution = task(input);

@@ -1,10 +1,10 @@
-import { Executable } from "../../execution";
-import { Input, Meta, Output, Task } from "../../work_api";
+import { ExecutableFn } from "../../execution";
+import { Input, Meta, Output, Fn } from "../../work_api";
 import { copyMeta } from "../../util/meta";
 
 
-export type WithRecordedDuration<T extends Executable> = Task<Input<T>, Output<T> & { duration: Promise<number | null> }> & Meta<T>;
-export function recordDuration<T extends Executable>(task: T): WithRecordedDuration<T> {
+export type WithRecordedDuration<T extends ExecutableFn> = Fn<Input<T>, Output<T> & { duration: Promise<number | null> }> & Meta<T>;
+export function recordDuration<T extends ExecutableFn>(task: T): WithRecordedDuration<T> {
     function withStats(input: Input<T>) {
         const start = Date.now();
         const execution = task(input);
@@ -15,5 +15,5 @@ export function recordDuration<T extends Executable>(task: T): WithRecordedDurat
         };
     }
 
-    return copyMeta(withStats, task) as ReturnType<typeof recordDuration>;
+    return copyMeta(withStats, task) as WithRecordedDuration<T>;
 }

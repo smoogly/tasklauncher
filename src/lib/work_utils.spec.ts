@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { getDependencies, getRootTask, work } from "./work";
-import { Fn, TaskTree } from "./work_api";
+import { AnyTask, TaskTree } from "./work_api";
 
 describe("Work utils", () => {
     let task: TestTask;
@@ -37,7 +37,7 @@ describe("Work utils", () => {
         });
 
         it("Should return first level dependencies of a task tree", async () => {
-            const tree: TaskTree<Fn> = {
+            const tree: TaskTree<AnyTask> = {
                 task: task.task,
                 dependencies: [],
             };

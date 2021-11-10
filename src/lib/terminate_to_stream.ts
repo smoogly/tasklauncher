@@ -1,8 +1,8 @@
 import { Writable } from "stream";
 import { ParallelizedExecution } from "./parallelize";
-import { Fn } from "./work_api";
+import { AnyTask } from "./work_api";
 
-export const terminateToStream = (execution: ParallelizedExecution<Fn>, stream: Writable) => {
+export const terminateToStream = (execution: ParallelizedExecution<AnyTask>, stream: Writable) => {
     let lastErr: unknown = {};
     const logError = (err: unknown) => {
         if (err === lastErr) { return; }

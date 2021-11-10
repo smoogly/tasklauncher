@@ -7,7 +7,7 @@ import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { observableStatus } from "./util/observable";
 import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";
-import { Input, Meta, Output, Task, TreeBuilder, Work } from "./work_api";
+import { AnyInput, Fn, Input, Meta, Output, SimpleTask, TreeBuilder, Work } from "./work_api";
 import { Execution } from "./execution";
 import { map } from "./mapping/map";
 import { copyMeta } from "./util/meta";
@@ -48,7 +48,7 @@ describe("parallelize", () => {
 
     it("Should provide the input to each task", async () => {
         const input = { input: "input" };
-        const typedWork = work(target.task).after(dep1.task).after(dep2.task) as unknown as Work<Task<typeof input, Execution>>;
+        const typedWork = work(target.task).after(dep1.task).after(dep2.task) as unknown as Work<SimpleTask<typeof input, Execution>>;
         const execution = parallelize(typedWork)(input);
 
         dep1.start.resolve(); dep1.completion.resolve();
@@ -64,7 +64,7 @@ describe("parallelize", () => {
 
     it("Should provide the input to further work returned by a task", async () => {
         const input = { input: "input" };
-        const typedWork = work(target.task) as unknown as TreeBuilder<Task<typeof input, Execution>>;
+        const typedWork = work(target.task) as unknown as TreeBuilder<SimpleTask<typeof input, Execution>>;
         const execution = parallelize(work((_arg: typeof input) => typedWork))(input);
 
         target.start.resolve(); target.completion.resolve();
@@ -138,13 +138,13 @@ describe("parallelize", () => {
     });
 
     it("Should mark the noop execution started", async () => {
-        const status = promiseStatus(parallelize(work())({}).started);
+        const status = promiseStatus(parallelize(work())().started);
         await timers.runAllAsync();
         expect(status()).to.equal("resolved");
     });
 
     it("Should mark the noop execution completed", async () => {
-        const status = promiseStatus(parallelize(work())({}).completed);
+        const status = promiseStatus(parallelize(work())().completed);
         await timers.runAllAsync();
         expect(status()).to.equal("resolved");
     });
@@ -545,7 +545,7 @@ describe("parallelize", () => {
     });
 
     it("Should complete the observable for a noop task", async () => {
-        const status = observableStatus(parallelize(work())({}).output);
+        const status = observableStatus(parallelize(work())().output);
         await timers.runAllAsync();
 
         expect(status()).to.equal("completed");
@@ -597,7 +597,7 @@ describe("parallelize", () => {
     });
 
     it("Should resolve with null stats for noop execution when completed", async () => {
-        const stats = await parallelize(work())({}).completed;
+        const stats = await parallelize(work())().completed;
         expect(stats).to.deep.equal({ stats: null, dependencies: [] });
     });
 
@@ -607,13 +607,12 @@ describe("parallelize", () => {
         const branch2 = work(Object.assign(dep2.task, { tag: "dep2" })).after(taggedCommon);
         const allWork = work(Object.assign(target.task, { tag: "target" })).after(branch1, branch2);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function tagExecution<T extends Task<any, object> & { tag: string }>(fn: T) {
+        function tagExecution<T extends Fn<AnyInput, object> & { tag: string }>(fn: T) {
             function tagged(input: Input<T>) {
                 return { ...fn(input), tag: fn.tag };
             }
 
-            return copyMeta(tagged, fn) as Task<Input<T>, Output<T> & { tag: string }> & Meta<T>;
+            return copyMeta(tagged, fn) as Fn<Input<T>, Output<T> & { tag: string }> & Meta<T>;
         }
 
         const execution = parallelize(map(allWork, tagExecution))();

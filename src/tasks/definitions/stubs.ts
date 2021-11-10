@@ -1,12 +1,12 @@
 import { createTestTask, TestTask } from "../../lib/test_util/create_test_task";
-import { work, copyMeta, Fn } from "../../lib";
+import { work, copyMeta, AnyTask } from "../../lib";
 
 const common = createTestTask<{}>();
 const dep1 = createTestTask<{}>();
 const dep2 = createTestTask<{}>();
 const target = createTestTask<{}>();
 
-const tag = <T extends Fn>(fn: T, taskName: string): T & { taskName: string } => Object.assign(fn, { taskName });
+const tag = <T extends AnyTask>(fn: T, taskName: string): T & { taskName: string } => Object.assign(fn, { taskName });
 const control = <T>(task: TestTask<T>, startAfter: number, runTime?: number) => {
     function controlled(input: T) {
         const res = task.task(input);
