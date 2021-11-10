@@ -1,7 +1,7 @@
 // TODO: cleanup exports, only export what's strictly necessary to compose and exec work
 
 export type { Execution } from "./execution";
-export type { AnyTask, Task, TaskTree, TreeBuilder, Work, WorkType, Input, Output, Meta } from "./work_api";
+export type { AnyTask, TaskTree, TreeBuilder, Work, WorkType, Input, Output, Meta } from "./work_api";
 
 export * from "./exec";
 

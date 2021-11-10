@@ -3,7 +3,7 @@ import * as Observable from "zen-observable";
 import { merge } from "zen-observable/extras";
 
 import { getDependencies, getRootTask, isWork } from "./work";
-import { AnyTask, Input, Output, Fn, Work, SimpleTask, AnyInput } from "./work_api";
+import { AnyTask, Input, Output, Fn, Work, Task, AnyInput } from "./work_api";
 import { Execution, isExecution } from "./execution";
 import { noop } from "./util/noop";
 import { UnionOmit } from "./util/types";
@@ -31,7 +31,7 @@ const executionKeys = typeKeys<Execution>({
 });
 
 const infinitePromise = new Promise(noop);
-function _parallelize<T extends SimpleTask<AnyInput, Execution>>(
+function _parallelize<T extends Task<AnyInput, Execution>>(
     work: Work<T>,
     executions: WeakMap<AnyTask, {
         execution: ParallelizedExecution<T>,
@@ -161,6 +161,6 @@ function _parallelize<T extends SimpleTask<AnyInput, Execution>>(
     };
 }
 
-export function parallelize<T extends SimpleTask<AnyInput, Execution>>(work: Work<T>): Fn<Input<T>, ParallelizedExecution<T>> {
+export function parallelize<T extends Task<AnyInput, Execution>>(work: Work<T>): Fn<Input<T>, ParallelizedExecution<T>> {
     return _parallelize(work, new WeakMap());
 }

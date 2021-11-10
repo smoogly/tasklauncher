@@ -1,5 +1,5 @@
 import { provideCmdOptions } from "./provide_cmd_options";
-import { SimpleTask, Task, Fn, Work } from "../../work_api";
+import { Task, Fn, Work } from "../../work_api";
 import { CmdOptions } from "../../runners/cmd";
 import { map } from "../map";
 
@@ -18,6 +18,6 @@ const cmdOptionsKey: keyof CmdOptions = "supportsColor";
 // @ts-expect-error — incompatible type of CmdOptions prop
 provideCmdOptions(1 as unknown as Task<{ [cmdOptionsKey]: 1 }, 1>);
 
-map(1 as unknown as SimpleTask<CmdOptions, 1>, provideCmdOptions);
-map(1 as unknown as Work<SimpleTask<CmdOptions, 1>>, provideCmdOptions);
+map(1 as unknown as Task<CmdOptions, 1>, provideCmdOptions);
+map(1 as unknown as Work<Task<CmdOptions, 1>>, provideCmdOptions);
 

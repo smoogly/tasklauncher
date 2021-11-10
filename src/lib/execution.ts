@@ -1,5 +1,5 @@
 import * as Observable from "zen-observable";
-import { AnyInput, SimpleTask, Fn } from "./work_api";
+import { AnyInput, Task, Fn } from "./work_api";
 import { hasKey } from "./util/typeguards";
 import { types } from "util";
 
@@ -10,7 +10,7 @@ export interface Execution {
     kill(): void,
 }
 
-export type ExecutableTask = SimpleTask<AnyInput, Execution>;
+export type ExecutableTask = Task<AnyInput, Execution>;
 export type ExecutableFn = Fn<AnyInput, Execution>;
 export function isExecution(val: unknown): val is Execution {
     if (typeof val !== "object") { return false; }

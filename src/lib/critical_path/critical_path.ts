@@ -1,9 +1,9 @@
-import { AnyInput, SimpleTask } from "../work_api";
+import { AnyInput, Task } from "../work_api";
 import { Execution } from "../execution";
 import { Stats, TaskExecutionStat } from "../parallelize";
 import { alignDurations, formatDuration } from "../util/time";
 
-export type CritPathExpectedTaskShape = SimpleTask<AnyInput, Execution & { duration: Promise<number | null> }> & { taskName: string };
+export type CritPathExpectedTaskShape = Task<AnyInput, Execution & { duration: Promise<number | null> }> & { taskName: string };
 export async function criticalPath(executionStats: Stats<TaskExecutionStat<CritPathExpectedTaskShape>>) {
     if (depth(executionStats) < 2) { return null; } // Ignore all-parallel task trees
 

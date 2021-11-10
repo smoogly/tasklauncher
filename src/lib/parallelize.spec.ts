@@ -7,7 +7,7 @@ import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { observableStatus } from "./util/observable";
 import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";
-import { AnyInput, Fn, Input, Meta, Output, SimpleTask, TreeBuilder, Work } from "./work_api";
+import { AnyInput, Fn, Input, Meta, Output, Task, TreeBuilder, Work } from "./work_api";
 import { Execution } from "./execution";
 import { map } from "./mapping/map";
 import { copyMeta } from "./util/meta";
@@ -48,7 +48,7 @@ describe("parallelize", () => {
 
     it("Should provide the input to each task", async () => {
         const input = { input: "input" };
-        const typedWork = work(target.task).after(dep1.task).after(dep2.task) as unknown as Work<SimpleTask<typeof input, Execution>>;
+        const typedWork = work(target.task).after(dep1.task).after(dep2.task) as unknown as Work<Task<typeof input, Execution>>;
         const execution = parallelize(typedWork)(input);
 
         dep1.start.resolve(); dep1.completion.resolve();
@@ -64,7 +64,7 @@ describe("parallelize", () => {
 
     it("Should provide the input to further work returned by a task", async () => {
         const input = { input: "input" };
-        const typedWork = work(target.task) as unknown as TreeBuilder<SimpleTask<typeof input, Execution>>;
+        const typedWork = work(target.task) as unknown as TreeBuilder<Task<typeof input, Execution>>;
         const execution = parallelize(work((_arg: typeof input) => typedWork))(input);
 
         target.start.resolve(); target.completion.resolve();

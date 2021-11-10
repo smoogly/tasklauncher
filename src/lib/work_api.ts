@@ -3,19 +3,11 @@ import { Default, ResolveIntersection } from "./util/types";
 
 // Deliberate any: arguments are contravariant, need a wide type for general compatibility.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyInputs = Array<any>;
-export type AnyInput = List.Head<AnyInputs>;
+export type AnyInput = any;
 export type AnyTask = (input: AnyInput) => unknown;
 
 export type Fn<In, Out> = (input: In) => Out;
-export type SimpleTask<In, Out> = (input: In) => Out | Work<SimpleTask<In, Out>>;
-
-// TODO: is the Task type even necessary?
-type TaskOutput<Inputs extends AnyInputs, Output> = List.Length<Inputs> extends 0 ? Output : Work<Task<Inputs, Output>>;
-export type Task<Inputs extends AnyInputs, Output> = {
-    "tuple": (input: List.Head<Inputs>) => TaskOutput<List.Tail<Inputs>, Output>,
-    "array": SimpleTask<Inputs[number], Output>, // Simplify if `Inputs` are an unbounded array
-}[Any.Equals<List.Length<Inputs>, number> extends 1 ? "array" : "tuple"];
+export type Task<In, Out> = (input: In) => Out | Work<Task<In, Out>>;
 
 export type TaskTree<T extends AnyTask> = {
     task: T | null, // Null denotes no-op when all dependencies need to be executed with in parallel
@@ -78,7 +70,7 @@ type Resolve<
     "stop": DefaultByType[K],
 }[Iteration.Pos<Iter> extends 0 ? "stop" : "proceed"];
 
-type HandleInputDefaults<Inputs extends AnyInputs> =
+type HandleInputDefaults<Inputs extends AnyInput[]> =
       Any.Equals<List.Length<Inputs>, 0> extends 1 ? never // No args
     : Any.Equals<Exclude<Inputs[number], void | undefined>, never> extends 1 ? void // Only void
     : Exclude<Inputs[number], void | undefined>; // Has other inputs except voids

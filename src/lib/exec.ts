@@ -7,9 +7,8 @@ import { tag } from "./mapping/mappers/tag";
 import { recordDuration } from "./mapping/mappers/record_duration";
 import { parallelize } from "./parallelize";
 import { map } from "./mapping/map";
-import { AnyTask, Input, Output, SimpleTask, Work } from "./work_api";
+import { AnyTask, Input, Output, Task, Work } from "./work_api";
 import { Execution } from "./execution";
-import { printCriticalPath } from "./print_critical_path";
 import { terminateToStream } from "./terminate_to_stream";
 import { Any, Object } from "ts-toolbelt";
 
@@ -21,7 +20,7 @@ export type ExecutorInputArg<T> = IsEntirelyOptional<T> extends 1 ? ([T] | []) :
 
 type Bag = Record<string, unknown>;
 type TaskRestriction<T extends AnyTask> = Input<T> extends Bag ? (Output<T> extends Execution ? T : never) : never;
-type RestrictedTask = Work<SimpleTask<Bag, Execution> & { taskName: string }>; // This type must match what `T` is restricted to inside `TaskRestriction`
+type RestrictedTask = Work<Task<Bag, Execution> & { taskName: string }>; // This type must match what `T` is restricted to inside `TaskRestriction`
 
 export function exec<T extends AnyTask>(work: Work<Any.Cast<T, TaskRestriction<T>> & { taskName: string }>, ...input: ExecutorInputArg<Input<T>>) {
     const wrk = work as unknown as RestrictedTask; // De-facto, `TaskRestriction` narrows `T` to this type
@@ -36,5 +35,5 @@ export function exec<T extends AnyTask>(work: Work<Any.Cast<T, TaskRestriction<T
 
     const execution = task(input[0] ?? {});
     terminateToStream(execution, process.stdout);
-    printCriticalPath(execution, process.stdout);
+    // printCriticalPath(execution, process.stdout); // TODO: uncomment when critpath is fixed for nested work, see parallelize.ts
 }
