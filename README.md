@@ -31,7 +31,7 @@ import { exec, work, cmd } from "tasklauncher"
 exec(work(cmd("eslint"), cmd("jest")))
 ```
 
-Linting and testing are independent tasks and can be run in parallel.
+Linting and testing are independent tasks, and can be run in parallel.
 The workflow is complete when both tasks are complete.
 
 
@@ -109,6 +109,12 @@ exec(work(test).after(db))
 
 Another way to use task `start` events is to launch development environment,
 e.g. webpack devserver, nodemon and database:
+```
+ Webpack ┝━━━━━▶─╮   
+Start DB ┝━━━▶╮  │
+      Nodemon ┝━▶┤
+                 ╰ Dev env started  
+```
 ```typescript
 import { exec, work, cmd, detectLog } from "tasklauncher"
 const webpack = cmd(
@@ -219,11 +225,17 @@ considered one task, conversely `t1 !== t2` are different tasks.
 > — same command, but different tasks.
 
 Correct way to define a common dependency is
+```
+Common ┝━▶╮
+      One ┝━▶╮
+  Another ┝━▶┤  
+             ╰ All done
+```
 ```typescript
 const common = cmd("echo Common")
 exec(work(
-    work(cmd("echo One task"), common),
-    work(cmd("echo Another task"), common),
+    work(cmd("echo One task")).after(common),
+    work(cmd("echo Another task")).after(common),
 ))
 ```
 
