@@ -1,8 +1,13 @@
 {
   "name": "tasklauncher",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "test": "npm install --no-audit && ts-node -T src/tasks/ci.ts"
+  },
+  "author": {
+    "name": "Arseny Smoogly",
+    "email": "arseny@smoogly.ru",
+    "url": "http://smoogly.ru"
   },
   "main": "index.js",
   "types": "index.d.ts",
