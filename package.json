@@ -1,6 +1,6 @@
 {
   "name": "tasklauncher",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "test": "npm install --no-audit && ts-node -T src/tasks/ci.ts"
   },
@@ -37,5 +37,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/smoogly/tasklauncher.git"
-  }
+  },
+  "homepage": "https://github.com/smoogly/tasklauncher#readme"
 }

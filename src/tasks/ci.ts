@@ -4,7 +4,7 @@ import { build, typecheck } from "./definitions/typescript";
 import { lint } from "./definitions/lint";
 import { stubSuite } from "./definitions/stubs";
 
-const buildTasks = work(cmd("cp package.json build")).after(build).after(
+const buildTasks = work(cmd("cp package.json README.md build")).after(build).after(
     unitTests,
     typecheck,
     lint,
