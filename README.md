@@ -95,7 +95,7 @@ the dependent task `completes`.
 ```
        Started   Kill
 DB ┝━━━━━━┯╍╍╍╍╍╍╍┯╍╍▶ DB shutdown, task completed
-    Tests ┝━━━━━━▶╯
+    Tests ┝━━━━━━▶╯ Tests completed
 ```
 ```typescript
 import { exec, work, cmd, detectLog } from "tasklauncher"
@@ -134,6 +134,33 @@ exec(devenv)
 
 Since all tasks are running in background mode, no task will complete, and no dependencies will be terminated.
 All tasks will run continuously until the execution itself is killed, e.g. via Ctrl-C or by closing the terminal.
+
+
+### Detecting start in `cmd`
+
+`cmd` second arg [accepts a function](./src/lib/runners/cmd.ts) that accepts output observable,
+and is supposed to resolve when `start` event is detected.
+
+`detectLog` utility implements `start` detection by checking the command log for a trigger.
+Trigger could be a string, regexp, or an arbitrary function checking if logs satisfy a condition.
+
+Postgres 13.3 docker container re-started using `docker-compose` might output a trigger string twice:
+```typescript
+import { cmd, detectLog } from "tasklauncher"
+
+const dbReadyTrigger = "database system is ready to accept connections"
+const checkDbRunning = (log: string) => {
+    if (log.indexOf(dbReadyTrigger) === -1) { return false }
+
+    return log.indexOf("waiting for server to start...") === -1
+
+        // Container was started for the first time and is being inited.
+        // Need to wait for database ready _twice._
+        || log.lastIndexOf(dbReadyTrigger) !== log.indexOf(dbReadyTrigger)
+}
+
+export const db = cmd("docker-compose -f database.yml up", detectLog(checkDbRunning))
+```
 
 
 ## Failures
@@ -230,7 +257,7 @@ Input parameters can be used to configure the work at runtime.
 A task, rather than returning [an Execution API](./src/lib/execution.ts),
 may instead return further work: another task, or an entire tree of tasks. 
 
-This can be used, for example, to run test with or without coverage
+This can be used, for example, to run tests with or without coverage
 ```typescript
 import { exec, cmd } from "tasklauncher"
 const tests = ({ coverage }) => cmd(`jest --coverage=${ coverage }`)
@@ -263,7 +290,50 @@ const task2 = ({ arg2 }: { arg2: string }) => cmd(arg2)
 exec(work(task1, task2), { arg1: "Hello" })
 ```
 
-The easiest way to execute your work scripts is by using `ts-node`
+The easiest way to execute your work scripts is by using [`ts-node`](https://github.com/TypeStrong/ts-node)
 ```shell
-npx ts-node -T my_work.ts
+npx -p ts-node -p typescript ts-node -T my_work.ts
+```
+
+
+## Creating a Command-Line Interface
+
+Use a tool like [`yargs`](https://github.com/yargs/yargs) to create a CLI,
+passing the captured options to the Task Launcher:
+```typescript
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import { exec } from 'tasklauncher'
+import { mytests } from './src/tasks' // Your work definition
+
+yargs(hideBin(process.argv))
+    .command(
+        'test', 'execute the test suite', 
+        opts => opts
+            .option("coverage", {
+                description: "Whether the coverage should be collected during test run",
+                type: "boolean",
+                default: true,
+            }), 
+        argv => exec(mytests, argv) // Execute `mywork` with commandline arguments
+    )
+    .strictCommands()
+    .strictOptions()
+    .demandCommand(1, 'Specify a command to execute')
+    .scriptName("npm run task")
+    .parse()
+```
+
+Specify the command in `package.json` pointing to the file with yargs
+```
+"scripts": {
+  "task": "ts-node -T yargs_commands.ts"
+}
+```
+
+Run using
+```shell
+npm run task test --no-coverage
+# or
+yarn task test --no-coverage
 ```
