@@ -232,6 +232,7 @@ Common ┝━▶╮
              ╰ All done
 ```
 ```typescript
+import { exec, work, cmd } from "tasklauncher"
 const common = cmd("echo Common")
 exec(work(
     work(cmd("echo One task")).after(common),
