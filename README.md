@@ -17,13 +17,13 @@ Suppose, your workflow is linting and testing.
 Typically, you might run `eslint && jest` like this
 ```
    Lint    Test
-      ┝━━━►┝━━━━━━► All Done
+      ┝━━━▶┝━━━━━━▶ All Done
 ```
 
 Task Launcher will run
 ```
- Lint ┝━━━►───╮
-Tests ┝━━━━━━►┤
+ Lint ┝━━━▶───╮
+Tests ┝━━━━━━▶┤
               ╰ All done
 ```
 ```typescript
@@ -44,13 +44,13 @@ and deployment must run after all other tasks complete successfully.
 
 Task Launcher will run
 ```
-      Lint ┝━►───────────╮
-Unit Tests ┝━━━━━►───────┤   
-  Start DB ┝━━━►╮        │
-   Integ. Tests ┝━━━━►───┤
-            E2E ╰──┝━━━━►┤ 
-  Build FE ┝━━━━━━►┴─────┤
-                  Deploy ┝━━► All done
+      Lint ┝━▶───────────╮
+Unit Tests ┝━━━━━▶───────┤   
+  Start DB ┝━━━▶╮        │
+   Integ. Tests ┝━━━━▶───┤
+            E2E ╰──┝━━━━▶┤ 
+  Build FE ┝━━━━━━▶┴─────┤
+                  Deploy ┝━━▶ All done
 ```
 ```typescript
 import { exec, work, cmd } from "tasklauncher"
@@ -73,7 +73,7 @@ exec(deploy)
 Task will have 3 lifecycle events during a successful execution:
 `inited`, `started` and `completed`.
 ```
-Inited ┝━━━━━━┯╍╍╍╍╍► Completed
+Inited ┝━━━━━━┯╍╍╍╍╍▶ Completed
            Started
 ```
 
@@ -94,8 +94,8 @@ the dependency is `started`, and will issue a `kill` once
 the dependent task `completes`.
 ```
        Started   Kill
-DB ┝━━━━━━┯╍╍╍╍╍╍╍┯╍╍► DB shutdown, task completed
-    Tests ┝━━━━━━►╯
+DB ┝━━━━━━┯╍╍╍╍╍╍╍┯╍╍▶ DB shutdown, task completed
+    Tests ┝━━━━━━▶╯
 ```
 ```typescript
 import { exec, work, cmd, detectLog } from "tasklauncher"
