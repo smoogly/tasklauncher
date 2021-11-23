@@ -251,7 +251,7 @@ import { exec, work, Execution } from "tasklauncher"
 import * as Observable from "zen-observable"
 
 const generateExecution = (log: string): Execution => ({
-    output: Observable.of(log),
+    output: Observable.of(Buffer.from(log)),
     started: Promise.resolve(),
     completed: Promise.resolve(),
     kill: () => void 0,
@@ -328,7 +328,7 @@ yargs(hideBin(process.argv))
                 type: "boolean",
                 default: true,
             }), 
-        argv => exec(mytests, argv) // Execute `mywork` with commandline arguments
+        argv => exec(mytests, argv) // Execute `mytests` with commandline arguments
     )
     .strictCommands()
     .strictOptions()
