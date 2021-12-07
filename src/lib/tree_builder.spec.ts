@@ -86,27 +86,6 @@ describe("work tree builder", () => {
         expect(() => work(target.task).after(target.task)).to.throw(/circular/i);
     });
 
-    it("Should use the taskName prop for circular dependency description if it is available", async () => {
-        const taskName = "some test task name";
-        expect(() => work(Object.assign(target.task, { taskName })).after(target.task)).to.throw(new RegExp(taskName));
-    });
-
-    it("Should use the function name for circular dependency description if it is available", async () => {
-        function myTestFunction () { return void 0; }
-        expect(() => work(myTestFunction).after(myTestFunction)).to.throw(/myTestFunction/);
-    });
-
-    it("Should use function source for circular dependency description if it is available", async () => {
-        const source = "My test function source";
-        const task = Object.assign(() => void 0, { toString: () => source });
-        expect(() => work(task).after(task)).to.throw(new RegExp(source));
-    });
-
-    it("Should display 'unknown' for circular dependency description if nothing else is available", async () => {
-        const task = Object.assign(() => void 0, { toString: () => "" });
-        expect(() => work(task).after(task)).to.throw(/unknown/);
-    });
-
     it("Should display the task chain in single line if all task names are single line", async () => {
         const task = Object.assign(target.task, { taskName: "inline" });
         expect(() => work(task).after(task)).to.throw(/->/i);

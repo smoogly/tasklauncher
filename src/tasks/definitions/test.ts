@@ -9,7 +9,7 @@ type UnitTestsParams = {
     debug?: boolean,
 };
 
-export const unitTests = Object.assign((opts: UnitTestsParams) => {
+export function unitTests(opts: UnitTestsParams) {
     const nycExcludes = [
         "**/*.spec.ts",
         "src/tasks/**",
@@ -34,4 +34,4 @@ export const unitTests = Object.assign((opts: UnitTestsParams) => {
     const command = `${ opts.coverage ? nyc : "" } ${ mocha }`;
 
     return cmd(command);
-}, { taskName: "mocha" });
+}

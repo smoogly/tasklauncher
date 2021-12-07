@@ -1,6 +1,7 @@
 import { AnyTask, TaskTree, TreeBuilder, Work, WorkType } from "./work_api";
 import { noop } from "./util/noop";
 import { unreachable } from "./util/typeguards";
+import { taskName } from "./util/task_name";
 
 export function isTreeBuilder<T extends AnyTask>(wrk: Work<T>): wrk is TreeBuilder<T>;
 export function isTreeBuilder(wrk: unknown): wrk is TreeBuilder<AnyTask>;
@@ -33,11 +34,6 @@ export function getDependencies<T extends AnyTask>(wrk: Work<T>): TaskTree<T>[] 
     return unreachable(wrk, "Unexpected work type");
 }
 
-const hasProp = <K extends PropertyKey>(val: object, prop: K): val is Record<K, unknown> => prop in val;
-function taskName(task: AnyTask): string {
-    if (hasProp(task, "taskName") && typeof task.taskName === "string" && task.taskName) { return task.taskName; }
-    return task.name || task.toString() || "unknown";
-}
 const _traversePostVisit = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>) => void, visited: AnyTask[]) => {
     if (tree.task && visited.includes(tree.task)) {
         const taskNames = [...visited, tree.task].map(taskName);
