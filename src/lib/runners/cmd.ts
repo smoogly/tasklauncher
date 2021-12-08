@@ -26,13 +26,14 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
         if (!executable) { throw new Error("No executable given"); }
 
         return Object.assign((input: CmdOptions): Execution => {
+            let killed = false;
             const child = spwn(executable, args, { env: buildEnv(input) });
 
             const output = merge(observableFromStream(child.stdout), observableFromStream(child.stderr));
             const completed = new Promise<void>((res, rej) => {
                 child.on("error", err => rej(err));
                 child.on("exit", (code, signal) => {
-                    if (code === 0) { return res(); }
+                    if (code === 0 || killed) { return res(); }
                     const reason = code !== null ? `non-zero code '${ code }'` : `signal '${ signal }'`;
                     rej(new Error(`Terminated with ${ reason }: ${ trimmedCommand }`));
                 });
@@ -45,13 +46,19 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
             ]).then(condition => {
                 if (condition === "started") { return; }
                 throw new Error("Task completed before start was detected. Please check your start detection logic.");
+            }).catch(e => {
+                if (killed) { return; }
+                throw e;
             });
 
             return {
                 output,
                 started,
                 completed: Promise.all([started, completed]).then(noop),
-                kill: () => child.kill(),
+                kill: () => {
+                    killed = true;
+                    child.kill();
+                },
             };
         }, { taskName: trimmedCommand });
     };

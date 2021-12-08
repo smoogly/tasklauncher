@@ -1,6 +1,6 @@
 {
   "name": "tasklauncher",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "scripts": {
     "test": "npm install --no-audit && ts-node -T src/tasks/ci.ts"
   },

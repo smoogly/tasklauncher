@@ -133,6 +133,21 @@ describe("Runners / cmd", () => {
         expect(status()).to.equal("rejected");
     });
 
+    it("Should mark the task completion resolved after kill even if task exits with non-zero exit code", async () => {
+        const execution = task(cmdOptions);
+        const status = promiseStatus(execution.completed);
+
+        const exitSubscription = on.getCalls().find(c => c.firstArg === "exit");
+        if (!exitSubscription) { throw new Error("Exit subscription not found"); }
+
+        execution.kill();
+
+        exitSubscription.lastArg(1); // Exit with exit code 1
+        await timers.runAllAsync();
+
+        expect(status()).to.equal("resolved");
+    });
+
     describe("without start detection", () => {
         it("Should mark the task started if task completes", async () => {
             const status = promiseStatus(task(cmdOptions).started);
@@ -205,6 +220,18 @@ describe("Runners / cmd", () => {
             await timers.runAllAsync();
             expect(startStatus()).to.equal("rejected");
             expect(completionStatus()).to.equal("rejected");
+        });
+
+        it("Should mark the task start resolved after kill even if start detection rejects", async () => {
+            const execution = task(cmdOptions);
+            const status = promiseStatus(execution.started);
+
+            execution.kill();
+
+            start.reject(new Error("Failure detecting start"));
+            await timers.runAllAsync();
+
+            expect(status()).to.equal("resolved");
         });
     });
 });
