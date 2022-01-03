@@ -5,7 +5,7 @@ import { promiseStatus } from "./test_util/async";
 import { work } from "./work";
 import { createTestTask, TestTask } from "./test_util/create_test_task";
 import { observableStatus } from "./util/observable";
-import { SinonFakeTimers, SinonStub, useFakeTimers } from "sinon";
+import { SinonFakeTimers, SinonStub, stub, useFakeTimers } from "sinon";
 import { noop } from "./util/noop";
 import { AnyInput, Fn, Input, Meta, Output, Task, TreeBuilder, Work } from "./work_api";
 import { Execution } from "./execution";
@@ -361,6 +361,21 @@ describe("parallelize", () => {
 
         await execution.completed;
         expect(common.task.calledOnce).to.equal(true);
+    });
+
+    it("Should only execute a wrapper dependency once if it is specified by multiple tasks in the work tree", async () => {
+        const cmmn = stub<[], typeof common.task>().returns(common.task);
+        const branch1 = work(dep1.task).after(cmmn);
+        const branch2 = work(dep2.task).after(cmmn);
+        const execution = parallelize(work(target.task).after(branch1, branch2))();
+
+        common.start.resolve(); common.completion.resolve();
+        dep1.start.resolve(); dep1.completion.resolve();
+        dep2.start.resolve(); dep2.completion.resolve();
+        target.start.resolve(); target.completion.resolve();
+
+        await execution.completed;
+        expect(cmmn.calledOnce).to.equal(true);
     });
 
     it("Should not kill a dependency used by another task", async () => {

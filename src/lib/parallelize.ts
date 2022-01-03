@@ -72,10 +72,10 @@ function _parallelize<T extends Task<AnyInput, Execution>>(
                 return cachedExecution.execution;
             }
 
-            const taskOutput = task(input);
-            if (isWork(taskOutput)) {
-                return _parallelize(taskOutput as Work<T>, executions)(input);
-            }
+            const returnValue = task(input);
+            const taskOutput = isWork(returnValue)
+                ? _parallelize(returnValue as Work<T>, executions)(input)
+                : returnValue;
 
             if (!isExecution(taskOutput)) { throw new Error(`Expected task to return an execution object, instead got: ${ inspect(taskOutput) }`); }
 
