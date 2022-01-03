@@ -10,6 +10,7 @@ import { observableFromStream } from "../util/observable";
 import { Execution } from "../execution";
 import { merge } from "zen-observable/extras";
 import { noop } from "../util/noop";
+import { resolveStart } from "./start_detector";
 
 
 export type StartDetector = (output: Observable<Buffer>) => Promise<void>;
@@ -39,7 +40,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
                 });
             });
 
-            const startDetected = !detectStart ? completed : detectStart(output).catch(e => {
+            const startDetected = !detectStart ? completed : resolveStart(detectStart, output).catch(e => {
                 child.kill();
                 throw e;
             });

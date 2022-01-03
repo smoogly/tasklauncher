@@ -210,10 +210,50 @@ describe("Runners / cmd", () => {
 
         it("Should kill the task if detectStart rejects", async () => {
             start.reject(new Error("Failure detecting start"));
-
             task(cmdOptions);
             await timers.runAllAsync();
+            expect(kill.calledOnce).to.equal(true);
+        });
 
+        it("Should mark the task start rejected if detectStart is not a function", async () => {
+            task = cmd(command, "this is going to fail" as never);
+            const status = promiseStatus(task(cmdOptions).started);
+            await timers.runAllAsync();
+            expect(status()).to.equal("rejected");
+        });
+
+        it("Should mark the task completion rejected if detectStart is not a function", async () => {
+            task = cmd(command, "this is going to fail" as never);
+            const status = promiseStatus(task(cmdOptions).completed);
+            await timers.runAllAsync();
+            expect(status()).to.equal("rejected");
+        });
+
+        it("Should kill the task if detectStart is not a function", async () => {
+            task = cmd(command, "this is going to fail" as never);
+            task(cmdOptions);
+            await timers.runAllAsync();
+            expect(kill.calledOnce).to.equal(true);
+        });
+
+        it("Should mark the task start rejected if detectStart does not return a promise", async () => {
+            detectStart.returns("This is not a promise" as never);
+            const status = promiseStatus(task(cmdOptions).started);
+            await timers.runAllAsync();
+            expect(status()).to.equal("rejected");
+        });
+
+        it("Should mark the task completion rejected if detectStart does not return a promise", async () => {
+            detectStart.returns("This is not a promise" as never);
+            const status = promiseStatus(task(cmdOptions).completed);
+            await timers.runAllAsync();
+            expect(status()).to.equal("rejected");
+        });
+
+        it("Should kill the task if detectStart does not return a promise", async () => {
+            detectStart.returns("This is not a promise" as never);
+            task(cmdOptions);
+            await timers.runAllAsync();
             expect(kill.calledOnce).to.equal(true);
         });
 
