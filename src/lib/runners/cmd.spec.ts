@@ -208,6 +208,15 @@ describe("Runners / cmd", () => {
             expect(status()).to.equal("rejected");
         });
 
+        it("Should kill the task if detectStart rejects", async () => {
+            start.reject(new Error("Failure detecting start"));
+
+            task(cmdOptions);
+            await timers.runAllAsync();
+
+            expect(kill.calledOnce).to.equal(true);
+        });
+
         it("Should mark both task start and completion rejected if task completes before start is detected", async () => {
             const { started, completed } = task(cmdOptions);
             const startStatus = promiseStatus(started);

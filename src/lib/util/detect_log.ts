@@ -26,6 +26,11 @@ export function detectLog(trigger: string | RegExp | TriggerFn, opts: DetectLogO
             )), opts.timeout);
         }
 
+        const failed = (error: unknown) => {
+            clearTimeout(timeout);
+            rej(error);
+        };
+
         const subscription = output.subscribe(
             next => {
                 bufs.push(next);
@@ -35,8 +40,8 @@ export function detectLog(trigger: string | RegExp | TriggerFn, opts: DetectLogO
                     res();
                 }
             },
-            error => rej(error),
-            () => rej(new Error(`Output completed, while trigger was not detected: ${ trigger }`)),
+            failed,
+            () => failed(new Error(`Output completed, while trigger was not detected: ${ trigger }`)),
         );
     });
 }

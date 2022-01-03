@@ -39,7 +39,11 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
                 });
             });
 
-            const startDetected = !detectStart ? completed : detectStart(output);
+            const startDetected = !detectStart ? completed : detectStart(output).catch(e => {
+                child.kill();
+                throw e;
+            });
+
             const started = Promise.race([
                 startDetected.then(() => "started"),
                 completed.then(() => "completed"),
