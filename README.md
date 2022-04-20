@@ -1,5 +1,7 @@
 # Task launcher
 
+Local CI for full-stack development. 
+
 Execute development tasks as fast as possible, all in one go.  
 Fail as soon as possible.
 
