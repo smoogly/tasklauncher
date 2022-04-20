@@ -1,5 +1,4 @@
 import { AnyTask, TaskTree, TreeBuilder, Work, WorkType } from "./work_api";
-import { noop } from "./util/noop";
 import { unreachable } from "./util/typeguards";
 import { taskName } from "./util/task_name";
 
@@ -34,7 +33,7 @@ export function getDependencies<T extends AnyTask>(wrk: Work<T>): TaskTree<T>[] 
     return unreachable(wrk, "Unexpected work type");
 }
 
-const _traversePostVisit = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>) => void, visited: AnyTask[]) => {
+const _transformDependencies = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>[]) => TaskTree<AnyTask>[], visited: AnyTask[]): TaskTree<AnyTask> => {
     if (tree.task && visited.includes(tree.task)) {
         const taskNames = [...visited, tree.task].map(taskName);
         const chainDescription = taskNames.some(t => t.includes("\n")) ? taskNames.join("\n↓\n") : taskNames.join(" -> ");
@@ -48,14 +47,17 @@ const _traversePostVisit = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask
         throw new Error(message + "\n" + chainDescription);
     }
 
-    tree.dependencies.forEach(node => _traversePostVisit(node, cb, tree.task ? [...visited, tree.task] : visited));
-    cb(tree);
+    const deps = tree.dependencies.map(treeNode => _transformDependencies(treeNode, cb, tree.task ? [...visited, tree.task] : [...visited]));
+    return {
+        task: tree.task,
+        dependencies: cb(deps),
+    };
 };
-const traversePostVisit = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>) => void) => _traversePostVisit(tree, cb, []);
+const transformDependencies = (tree: TaskTree<AnyTask>, cb: (node: TaskTree<AnyTask>[]) => TaskTree<AnyTask>[]) => _transformDependencies(tree, cb, []);
 
 const exactlyOne = <T>(val: T[]): val is [T] => val.length === 1;
 function _work(tasks: Work<AnyTask>[], dependencies: Work<AnyTask>[]): TreeBuilder<AnyTask> {
-    const workTree: TaskTree<AnyTask> = exactlyOne(tasks)
+    const workTreeBase: TaskTree<AnyTask> = exactlyOne(tasks)
         ? {
             task: getRootTask(tasks[0]),
             dependencies: getDependencies(tasks[0]),
@@ -68,6 +70,8 @@ function _work(tasks: Work<AnyTask>[], dependencies: Work<AnyTask>[]): TreeBuild
             })),
         };
 
+
+    let workTree: TaskTree<AnyTask> = workTreeBase;
     if (dependencies.length > 0) {
         const dependencyTree = _work(dependencies, []).getWorkTree();
         const resultingDependencies = dependencyTree.task === null
@@ -75,14 +79,14 @@ function _work(tasks: Work<AnyTask>[], dependencies: Work<AnyTask>[]): TreeBuild
             : [dependencyTree];
 
         // Push dependencies in the end of the work tree
-        traversePostVisit(workTree, node => {
-            if (node.dependencies.length > 0) { return; }
-            node.dependencies = resultingDependencies;
+        workTree = transformDependencies(workTreeBase, deps => {
+            if (deps.length > 0) { return deps; }
+            return resultingDependencies;
         });
     }
 
     // Check for circular dependencies
-    traversePostVisit(workTree, noop);
+    transformDependencies(workTree, x => x);
 
     return {
         getWorkTree: () => workTree,

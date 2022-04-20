@@ -82,6 +82,42 @@ describe("work tree builder", () => {
         });
     });
 
+    it("Should compose trees when generating work of work", async () => {
+        const nestedTask1 = createTestTask().task;
+        const nestedTask2 = createTestTask().task;
+        const nestedWork = work(nestedTask1).after(nestedTask2);
+        const targetWork = work(target.task, nestedWork).after(dep1.task).after(dep2.task);
+
+        expect(targetWork.getWorkTree()).to.deep.equal({
+            task: null,
+            dependencies: [
+                {
+                    task: target.task,
+                    dependencies: [
+                        {
+                            task: dep1.task,
+                            dependencies: [{ task: dep2.task, dependencies: [] }],
+                        },
+                    ],
+                },
+                {
+                    task: nestedTask1,
+                    dependencies: [
+                        {
+                            task: nestedTask2,
+                            dependencies: [
+                                {
+                                    task: dep1.task,
+                                    dependencies: [{ task: dep2.task, dependencies: [] }],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
+    });
+
     it("Should throw if given a circular dependency", async () => {
         expect(() => work(target.task).after(target.task)).to.throw(/circular/i);
     });
