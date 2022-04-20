@@ -1,6 +1,6 @@
 {
   "name": "tasklauncher",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "scripts": {
     "test": "npm run task test",
     "build": "npm run task build",
