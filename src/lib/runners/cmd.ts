@@ -28,7 +28,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
 
         return Object.assign((input: CmdOptions): Execution => {
             let killed = false;
-            const child = spwn(executable, args, { env: buildEnv(input) });
+            const child = spwn(executable, args, { env: buildEnv(input), shell: true });
 
             const output = merge(observableFromStream(child.stdout), observableFromStream(child.stderr));
             const completed = new Promise<void>((res, rej) => {
