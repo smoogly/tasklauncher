@@ -11,6 +11,7 @@ import { Execution } from "../execution";
 import { merge } from "zen-observable/extras";
 import { noop } from "../util/noop";
 import { resolveStart } from "./start_detector";
+import { platform } from "os";
 
 
 export type StartDetector = (output: Observable<Buffer>) => Promise<void>;
@@ -28,7 +29,7 @@ export function setupCmd(spwn: CMDSpawnType, buildEnv: (opts: CmdOptions) => Rec
 
         return Object.assign((input: CmdOptions): Execution => {
             let killed = false;
-            const child = spwn(executable, args, { env: buildEnv(input), shell: true });
+            const child = spwn(executable, args, { env: buildEnv(input), shell: platform() === "win32" });
 
             const output = merge(observableFromStream(child.stdout), observableFromStream(child.stderr));
             const completed = new Promise<void>((res, rej) => {
