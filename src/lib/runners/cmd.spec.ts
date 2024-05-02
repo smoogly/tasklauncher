@@ -85,6 +85,29 @@ describe("Runners / cmd", () => {
 
     it("Should kill the child if kill is called", async () => {
         task(cmdOptions).kill();
+        await timers.runAllAsync();
+        expect(kill.callCount).to.equal(4);
+    });
+
+    it("Should only issue kill commands once if kill is requested multiple times", async () => {
+        const run = task(cmdOptions);
+        run.kill();
+        run.kill();
+        run.kill();
+        run.kill();
+
+        await timers.runAllAsync();
+        expect(kill.callCount).to.equal(4);
+    });
+
+    it("Should kill avoid force-killing the child if it exits after SIGTERM", async () => {
+        task(cmdOptions).kill();
+
+        const onExitCallback = on.getCalls().find(c => c.firstArg === "exit")?.args[1];
+        if (!onExitCallback) { throw new Error("Expected a subscription to 'exit' event on a child process"); }
+        onExitCallback(); // Signal that the child process has exited
+
+        await timers.runAllAsync();
         expect(kill.calledOnce).to.equal(true);
     });
 
@@ -212,7 +235,7 @@ describe("Runners / cmd", () => {
             start.reject(new Error("Failure detecting start"));
             task(cmdOptions);
             await timers.runAllAsync();
-            expect(kill.calledOnce).to.equal(true);
+            expect(kill.callCount).to.equal(4);
         });
 
         it("Should mark the task start rejected if detectStart is not a function", async () => {
@@ -233,7 +256,7 @@ describe("Runners / cmd", () => {
             task = cmd(command, "this is going to fail" as never);
             task(cmdOptions);
             await timers.runAllAsync();
-            expect(kill.calledOnce).to.equal(true);
+            expect(kill.callCount).to.equal(4);
         });
 
         it("Should mark the task start rejected if detectStart does not return a promise", async () => {
@@ -254,7 +277,7 @@ describe("Runners / cmd", () => {
             detectStart.returns("This is not a promise" as never);
             task(cmdOptions);
             await timers.runAllAsync();
-            expect(kill.calledOnce).to.equal(true);
+            expect(kill.callCount).to.equal(4);
         });
 
         it("Should mark both task start and completion rejected if task completes before start is detected", async () => {

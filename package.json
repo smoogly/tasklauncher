@@ -1,6 +1,6 @@
 {
   "name": "tasklauncher",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "scripts": {
     "test": "npm run task test",
     "build": "npm run task build",
@@ -8,8 +8,8 @@
   },
   "author": {
     "name": "Arseny Smoogly",
-    "email": "arseny@smoogly.ru",
-    "url": "http://smoogly.ru"
+    "email": "arseny@smoogly.dev",
+    "url": "http://smoogly.dev"
   },
   "main": "index.js",
   "types": "index.d.ts",
